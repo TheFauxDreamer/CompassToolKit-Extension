@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>School Term Calendar</title>
+  <style>
+    :root {
+      --event-font-size: 9px;
+      --event-time-font-size: 8px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    .no-print {
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .font-size-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .font-size-control label {
+      font-size: 14px;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .font-size-control button {
+      padding: 4px 10px;
+      min-width: 32px;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .font-size-control .font-size-value {
+      min-width: 30px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .font-size-control .reset-btn {
+      font-size: 12px;
+      padding: 4px 8px;
+      background: #6c757d;
+    }
+
+    .font-size-control .reset-btn:hover {
+      background: #5a6268;
+    }
+
+    .layer-filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      margin-top: 10px;
+    }
+
+    .layer-filters-label {
+      font-weight: 600;
+      font-size: 14px;
+      margin-right: 5px;
+    }
+
+    .layer-filter {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      border: 2px solid;
+      cursor: pointer;
+      font-size: 13px;
+      transition: opacity 0.2s;
+      user-select: none;
+    }
+
+    .layer-filter input[type="checkbox"] {
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .layer-filter.disabled {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .layer-color-box {
+      width: 16px;
+      height: 16px;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    select {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .calendar-container {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    .term-section {
+      margin-bottom: 40px;
+      page-break-inside: avoid;
+    }
+
+    .term-header {
+      background: #007bff;
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px 8px 0 0;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+
+    .calendar-grid {
+      border: 1px solid #ddd;
+      border-top: none;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .calendar-header {
+      display: grid;
+      grid-template-columns: 60px repeat(7, minmax(0, 1fr));
+      background: #f8f9fa;
+      border-bottom: 2px solid #ddd;
+      width: 100%;
+    }
+
+    .calendar-header.hide-weekends {
+      grid-template-columns: 60px repeat(5, minmax(0, 1fr));
+    }
+
+    .calendar-week.hide-weekends {
+      grid-template-columns: 60px repeat(5, minmax(0, 1fr));
+    }
+
+    .calendar-day.weekend.hidden {
+      display: none;
+    }
+
+    .day-name.weekend.hidden {
+      display: none;
+    }
+
+    .week-header-spacer {
+      border-right: 2px solid #ddd;
+      background: #f8f9fa;
+    }
+
+    .day-name {
+      padding: 10px;
+      text-align: center;
+      font-weight: 600;
+      color: #555;
+      border-right: 1px solid #ddd;
+      overflow: hidden;
+    }
+
+    .day-name:last-child {
+      border-right: none;
+    }
+
+    .calendar-week {
+      display: grid;
+      grid-template-columns: 60px repeat(7, minmax(0, 1fr));
+      border-bottom: 1px solid #ddd;
+      min-height: 120px;
+      width: 100%;
+    }
+
+    .calendar-week:last-child {
+      border-bottom: none;
+    }
+
+    .week-number {
+      border-right: 2px solid #ddd;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 12px;
+      color: #555;
+      text-align: center;
+      padding: 8px 4px;
+      writing-mode: horizontal-tb;
+    }
+
+    .calendar-day {
+      border-right: 1px solid #ddd;
+      padding: 4px 6px;
+      display: flex;
+      flex-direction: column;
+      min-height: 120px;
+      overflow: hidden;
+      width: 100%;
+      min-width: 0;
+    }
+
+    .calendar-day:last-child {
+      border-right: none;
+    }
+
+    .calendar-day.other-month {
+      background: #fafafa;
+      color: #999;
+    }
+
+    .calendar-day.weekend {
+      background: #f8f9fa;
+    }
+
+    .day-number {
+      font-weight: 600;
+      font-size: 13px;
+      margin-bottom: 4px;
+      color: #333;
+      flex-shrink: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+    }
+
+    .day-number .month-abbr {
+      font-size: 10px;
+      font-weight: 500;
+      color: #666;
+    }
+
+    .calendar-day.other-month .day-number {
+      color: #999;
+    }
+
+    .calendar-day.other-month .day-number .month-abbr {
+      color: #aaa;
+    }
+
+    .day-events {
+      font-size: 10px;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .calendar-event {
+      padding: 2px 4px;
+      border-radius: 2px;
+      border-left: 2px solid;
+      font-size: var(--event-font-size);
+      line-height: 1.2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 0;
+      word-break: break-word;
+    }
+
+    .calendar-event.multi-day-placeholder {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .event-time {
+      font-weight: 600;
+      margin-right: 2px;
+      font-size: var(--event-time-font-size);
+      white-space: nowrap;
+    }
+
+    @media print {
+      @page {
+        margin: 0.5cm;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+      }
+
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      .calendar-container {
+        box-shadow: none;
+        padding: 10px;
+        margin: 0;
+        background: white;
+      }
+
+      h1 {
+        font-size: 18px;
+        margin-bottom: 10px;
+        color: #333;
+      }
+
+      .term-header {
+        font-size: 14px;
+        padding: 8px 12px;
+        page-break-after: avoid;
+        background: #007bff !important;
+        color: white !important;
+      }
+
+      .term-section {
+        page-break-inside: avoid;
+        margin-bottom: 15px;
+      }
+
+      .calendar-grid {
+        page-break-inside: avoid;
+        width: 100%;
+        border: 1px solid #ddd !important;
+      }
+
+      .calendar-header {
+        background: #f8f9fa !important;
+        border-bottom: 2px solid #ddd !important;
+      }
+
+      .day-name {
+        padding: 4px 2px;
+        font-size: 10px;
+        border-right: 1px solid #ddd !important;
+        color: #555 !important;
+      }
+
+      .week-number {
+        font-size: 10px;
+        padding: 4px 2px;
+        background: #f8f9fa !important;
+        border-right: 2px solid #ddd !important;
+        color: #555 !important;
+      }
+
+      .calendar-week {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border-bottom: 1px solid #ddd !important;
+      }
+      
+      .calendar-day {
+        padding: 2px 4px;
+        border-right: 1px solid #ddd !important;
+      }
+
+      .calendar-day.other-month {
+        background: #fafafa !important;
+      }
+
+      .calendar-day.weekend {
+        background: #f8f9fa !important;
+      }
+      
+      .day-number {
+        font-size: 10px;
+        margin-bottom: 2px;
+        color: #333 !important;
+      }
+
+      .calendar-event {
+        padding: 1px 2px;
+        margin: 1px 0;
+        line-height: 1.1;
+        border-radius: 2px !important;
+        /* Font size uses CSS variable which is set by JavaScript */
+      }
+
+      .event-time {
+        color: inherit !important;
+        /* Font size uses CSS variable which is set by JavaScript */
+      }
+    }
+
+    /* A4 specific styles */
+    body.print-a4 .calendar-week {
+      min-height: 120px;
+    }
+
+    body.print-a4 .calendar-day {
+      min-height: 120px;
+    }
+
+    @media print {
+      body.print-a4 .calendar-week {
+        min-height: 120px;
+      }
+      
+      body.print-a4 .calendar-day {
+        min-height: 120px;
+      }
+
+      body.print-a4 .day-number .month-abbr {
+        font-size: 8px;
+      }
+    }
+
+    /* A3 specific styles */
+    body.print-a3 .calendar-week {
+      min-height: 160px;
+    }
+
+    body.print-a3 .calendar-day {
+      min-height: 160px;
+    }
+
+    @media print {
+      body.print-a3 .calendar-week {
+        min-height: 160px;
+      }
+      
+      body.print-a3 .calendar-day {
+        min-height: 160px;
+      }
+
+      body.print-a3 .day-number {
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+
+      body.print-a3 .day-number .month-abbr {
+        font-size: 10px;
+      }
+
+      body.print-a3 .day-name {
+        font-size: 12px;
+        padding: 6px 4px;
+      }
+
+      body.print-a3 .week-number {
+        font-size: 12px;
+        padding: 6px 4px;
+      }
+
+      body.print-a3 h1 {
+        font-size: 22px;
+        margin-bottom: 12px;
+      }
+
+      body.print-a3 .term-header {
+        font-size: 16px;
+        padding: 10px 15px;
+      }
+    }
+
+    .week {
+      margin-bottom: 30px;
+      page-break-inside: avoid;
+    }
+
+    .week-header {
+      background: #f8f9fa;
+      padding: 10px 15px;
+      border-left: 4px solid #007bff;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .day {
+      margin-bottom: 15px;
+      padding-left: 20px;
+    }
+
+    .day-header {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    .event {
+      margin: 8px 0;
+      padding: 10px 12px;
+      border-radius: 4px;
+      border-left: 3px solid;
+      font-size: 13px;
+    }
+
+    .event-title {
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .event-description {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      color: #777;
+      margin-top: 4px;
+    }
+
+    .no-events {
+      color: #999;
+      font-style: italic;
+      font-size: 13px;
+      padding: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <div class="controls">
+      <button id="printButton"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg><span>Print Calendar</span></button>
+      <select id="viewMode">
+        <option value="term">Term Calendar View</option>
+        <option value="monthly">Monthly Calendar View</option>
+        <option value="weekly">Weekly List View</option>
+        <option value="daily">Daily List View</option>
+      </select>
+      <select id="termFilter">
+        <option value="all">All Terms</option>
+      </select>
+      <select id="paperSize">
+        <option value="a4">A4 Paper</option>
+        <option value="a3">A3 Paper</option>
+      </select>
+      <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="checkbox" id="hideWeekendsToggle" style="cursor: pointer;">
+        <span>Hide Weekends</span>
+      </label>
+      <div class="font-size-control">
+        <label>Event Text Size:</label>
+        <button id="fontSizeDecrease" title="Decrease font size">−</button>
+        <span class="font-size-value" id="fontSizeValue">9</span>
+        <button id="fontSizeIncrease" title="Increase font size">+</button>
+        <button id="fontSizeReset" class="reset-btn" title="Reset to default">Reset</button>
+      </div>
+    </div>
+    <div class="layer-filters" id="layerFilters">
+      <span class="layer-filters-label">Calendar Layers:</span>
+      <span style="font-size: 12px; color: #666;">(Click to show/hide)</span>
+    </div>
+  </div>
+
+  <div class="calendar-container">
+    <h1 id="calendarTitle">School Term Calendar</h1>
+    <div id="calendarContent">
+      Loading calendar data...
+    </div>
+  </div>
+
+  <script src="../src/shared/settings.js"></script>
+  <script src="../src/shared/icons.js"></script>
+  <script src="calendar.js"></script>
+</body>
+</html>

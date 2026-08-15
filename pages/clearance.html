@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Clearance Form</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #000;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .school-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .document-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .header-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        #schoolLogo {
+            object-fit: contain;
+        }
+
+        .year-term {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .student-info {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+
+        .student-info-row {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 8px;
+        }
+
+        .student-info-item {
+            display: flex;
+            gap: 10px;
+        }
+
+        .student-info-label {
+            font-weight: 600;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #1565c0;
+        }
+
+        .clearance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .clearance-table th,
+        .clearance-table td {
+            border: 1px solid #333;
+            padding: 12px 8px;
+            text-align: left;
+            min-height: 60px;
+        }
+
+        .clearance-table th {
+            background: #f0f0f0;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .clearance-table td {
+            font-size: 13px;
+        }
+
+        .col-subject {
+            width: 22%;
+        }
+
+        .col-code {
+            width: 10%;
+        }
+
+        .col-teacher {
+            width: 18%;
+        }
+
+        .col-comments {
+            width: 30%;
+        }
+
+        .col-signature {
+            width: 20%;
+        }
+
+        .special-row {
+            font-weight: 600;
+        }
+
+        .signature-cell {
+            height: 40px;
+        }
+
+        .forwarding-section {
+            margin: 30px 0;
+            width: 50%;
+        }
+
+        .forwarding-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .address-lines {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 80px;
+            background: #fafafa;
+        }
+
+        .address-line {
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+            min-height: 30px;
+        }
+
+        .address-line:last-child {
+            border-bottom: none;
+        }
+
+        .footer-notice {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 30px;
+            padding: 15px;
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 1cm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .controls {
+                display: none;
+            }
+
+            .clearance-table th,
+            .clearance-table td {
+                border: 1px solid #000;
+            }
+
+            .signature-cell {
+                height: 50px;
+            }
+
+            .footer-notice {
+                background: white;
+                border: 2px solid #000;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls">
+            <button class="btn" id="printBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg><span>Print</span></button>
+            <button class="btn" id="closeBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg><span>Close</span></button>
+        </div>
+
+        <div class="header">
+            <div class="header-left">
+                <div class="school-name" id="schoolName">School Name</div>
+                <div class="document-title">Student Clearance Form</div>
+            </div>
+            <div class="header-right">
+                <img id="schoolLogo" src="" alt="School Logo" style="max-height: 80px; max-width: 150px; display: none;">
+                <div class="year-term" id="yearTerm">Year: 2025 | Term: 4</div>
+            </div>
+        </div>
+
+        <div class="student-info">
+            <div class="student-info-row">
+                <div class="student-info-item">
+                    <span class="student-info-label">Student:</span>
+                    <span id="studentName">-</span>
+                </div>
+                <div class="student-info-item">
+                    <span class="student-info-label">Year Group:</span>
+                    <span id="yearGroup">-</span>
+                </div>
+                <div class="student-info-item">
+                    <span class="student-info-label">Faction:</span>
+                    <span id="faction">-</span>
+                </div>
+            </div>
+        </div>
+
+        <table class="clearance-table">
+            <thead>
+                <tr>
+                    <th class="col-subject">Subject</th>
+                    <th class="col-code">Code</th>
+                    <th class="col-teacher">Teacher</th>
+                    <th class="col-comments">Comments</th>
+                    <th class="col-signature">Teacher Signature</th>
+                </tr>
+            </thead>
+            <tbody id="clearanceTableBody">
+                <!-- Subject rows will be inserted here -->
+            </tbody>
+        </table>
+
+        <div class="forwarding-section">
+            <h3>Forwarding Address:</h3>
+            <div class="address-lines">
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+                <div class="address-line"></div>
+            </div>
+        </div>
+
+        <div class="footer-notice">
+            RETURN COMPLETED FORM TO FRONT OFFICE UPON COMPLETION
+        </div>
+    </div>
+
+    <script src="../src/shared/settings.js"></script>
+    <script src="clearance.js"></script>
+</body>
+</html>

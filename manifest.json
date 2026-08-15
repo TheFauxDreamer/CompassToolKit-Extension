@@ -1,0 +1,65 @@
+{
+  "manifest_version": 3,
+  "name": "Compass Toolkit",
+  "version": "1.0.0",
+  "description": "A set of Compass improvements — timetable printing, clearance forms, term calendars, directory filtering and fewer new tabs — in one extension.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.compass.education/*"
+  ],
+  "minimum_chrome_version": "111",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "Compass Toolkit",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.compass.education/*"],
+      "js": [
+        "src/shared/settings.js",
+        "src/shared/icons.js",
+        "src/content/feature-no-new-tabs.js",
+        "src/content/feature-chronicle.js",
+        "src/content/feature-hide-support.js",
+        "src/content/feature-directory-filter.js",
+        "src/content/feature-attendance-notes.js",
+        "src/content/feature-profile-tools.js",
+        "src/content/feature-calendar.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "*://*.compass.education/Records/UserNew.aspx*",
+        "*://*.compass.education/Organise/Calendar/*"
+      ],
+      "js": ["src/page/interceptor.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["pages/*"],
+      "matches": ["*://*.compass.education/*"]
+    }
+  ]
+}

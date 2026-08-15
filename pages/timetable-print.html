@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Timetable</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #1976d2;
+        }
+
+        .header-logo-row {
+            margin-bottom: 10px;
+        }
+
+        #schoolLogo {
+            max-height: 70px;
+            max-width: 260px;
+            object-fit: contain;
+        }
+
+        .header h1 {
+            color: #1976d2;
+            margin-bottom: 6px;
+        }
+
+        /* Black and White Mode - applies to both screen and print */
+        body.bw-mode .header {
+            border-bottom-color: #000 !important;
+        }
+
+        body.bw-mode .header h1 {
+            color: #000 !important;
+        }
+
+        body.bw-mode #schoolLogo {
+            display: none !important;
+        }
+
+        body.bw-mode .student-info {
+            color: #666 !important;
+        }
+
+        body.bw-mode .timetable th {
+            background: #fff !important;
+            color: #000 !important;
+            border: 2px solid #000 !important;
+        }
+
+        body.bw-mode .lunch-break {
+            background: #fff !important;
+            color: #000 !important;
+        }
+
+        body.bw-mode .special-class {
+            background: #fff !important;
+            border: 2px solid #000 !important;
+        }
+
+        body.bw-mode .special-time {
+            color: #000 !important;
+        }
+
+        body.bw-mode .subject-name {
+            color: #000 !important;
+        }
+
+        .header .student-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 20px;
+            margin: 0 5px;
+            background: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #1565c0;
+        }
+
+        .week-container {
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+
+        .timetable {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .timetable th,
+        .timetable td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .timetable th {
+            background: #1976d2;
+            color: white;
+            font-weight: 500;
+            position: sticky;
+            top: 0;
+        }
+
+        .timetable th.period-header {
+            background: #0d47a1;
+            width: 100px;
+        }
+
+        .timetable tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .timetable td {
+            min-height: 80px;
+        }
+
+        .period-time {
+            font-size: 0.75em;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .class-cell {
+            text-align: left;
+            padding: 8px;
+        }
+
+        .subject-code {
+            font-weight: 500;
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 3px;
+        }
+
+        .subject-name {
+            font-weight: bold;
+            color: #1976d2;
+            font-size: 0.95em;
+            margin-bottom: 2px;
+        }
+
+        /* B&W mode for subject name */
+        body.bw-mode .subject-name {
+            color: #000 !important;
+        }
+
+        .location {
+            color: #555;
+            font-size: 0.75em;
+        }
+
+        .teacher {
+            color: #555;
+            font-size: 0.75em;
+        }
+
+        .lunch-break {
+            background: #fff3e0 !important;
+            font-style: italic;
+            color: #f57c00;
+            font-weight: 500;
+        }
+
+        .lunch-duty {
+            background: #fff3e0 !important;
+        }
+
+        body.bw-mode .lunch-duty {
+            background: #fff !important;
+        }
+
+        .covered-class {
+            background: #ffebee !important;
+        }
+
+        .special-class {
+            background: #e8f5e9;
+            padding: 6px;
+            border-radius: 4px;
+            margin: -2px;
+        }
+
+        /* Color mode - explicitly set green background */
+        body:not(.bw-mode) .special-class {
+            background: #e8f5e9 !important;
+        }
+
+        .special-time {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        /* B&W mode overrides */
+        body.bw-mode .special-class {
+            background: #ffffff !important;
+        }
+
+        .special-time {
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #2e7d32;
+            margin-bottom: 4px;
+        }
+
+        .cover-info {
+            color: #c62828;
+            font-size: 0.75em;
+            font-style: italic;
+        }
+
+        .empty-cell {
+            background: #fafafa;
+        }
+
+        .class-separator {
+            margin: 8px 0;
+            padding-top: 8px;
+            border-top: 1px dashed #ccc;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 1cm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 0;
+                max-width: 100%;
+            }
+
+            .controls {
+                display: none;
+            }
+
+            .week-container {
+                page-break-inside: avoid;
+            }
+
+            .timetable {
+                page-break-inside: avoid;
+                font-size: 0.85em;
+            }
+
+            /* Ensure colors print correctly in color mode */
+            body:not(.bw-mode) .timetable th {
+                background: #1976d2 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body:not(.bw-mode) .lunch-break {
+                background: #fff3e0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body:not(.bw-mode) .lunch-duty {
+                background: #fff3e0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body:not(.bw-mode) .special-class {
+                background: #e8f5e9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body:not(.bw-mode) .special-class {
+                background: #e8f5e9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body:not(.bw-mode) .subject-name {
+                color: #1976d2 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body:not(.bw-mode) .special-time {
+                color: #2e7d32 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* B&W mode uses the same styles as screen, just ensure they print */
+            body.bw-mode .timetable th,
+            body.bw-mode .lunch-break,
+            body.bw-mode .special-class,
+            body.bw-mode .subject-name,
+            body.bw-mode .special-time,
+            body.bw-mode .header,
+            body.bw-mode .header h1 {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Ensure diagonal stripes print in B&W mode */
+            body.bw-mode .lunch-break {
+                background: repeating-linear-gradient(
+                    45deg,
+                    #f5f5f5,
+                    #f5f5f5 10px,
+                    #ffffff 10px,
+                    #ffffff 20px
+                ) !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Ensure special classes are white with border in B&W mode */
+            body.bw-mode .special-class,
+            body.bw-mode div.special-class {
+                background-color: #ffffff !important;
+                background-image: none !important;
+                border: 2px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            body.bw-mode .special-time {
+                color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .class-separator {
+                border-top: 1px dashed #999;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-logo-row">
+                <img id="schoolLogo" src="" alt="School Logo" style="display:none;">
+            </div>
+            <h1 id="schoolName">Student Timetable</h1>
+            <div class="student-info" id="studentName"></div>
+            <div class="student-info" id="studentInfo"></div>
+        </div>
+
+        <div class="controls">
+            <label style="margin-right: 20px; display: inline-flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="bwModeCheckbox" checked style="margin-right: 8px; cursor: pointer;">
+                <span>Black & White Mode (recommended for most printers)</span>
+            </label>
+            <button class="btn" id="printBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" rx="1" /></svg><span>Print</span></button>
+            <button class="btn" id="closeBtn"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg><span>Close</span></button>
+        </div>
+
+        <div id="timetableContent"></div>
+    </div>
+
+    <script src="../src/shared/settings.js"></script>
+    <script src="timetable-print.js"></script>
+</body>
+</html>
