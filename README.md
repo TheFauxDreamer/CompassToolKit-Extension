@@ -58,6 +58,8 @@ and lets you:
 - show one term or all of them
 - filter by calendar layer
 - hide weekends
+- hide draft events, meaning anything with `(Draft)` in its name. The option
+  says how many there are, and only appears when the calendar has some.
 - switch between A4 and A3
 - adjust the event text size to fit more on the page
 

@@ -465,7 +465,7 @@
     /* Fill the sheet: once the compact heights are worked out, hand whatever
        page height is left over back to the weeks so the grid ends at the
        bottom margin instead of halfway down.
-       min-height (rather than height) is deliberate — a term that genuinely
+       min-height (rather than height) is deliberate: a term that genuinely
        needs more room than one page still flows onto a second one instead of
        being clipped. */
     @media print {
@@ -638,6 +638,10 @@
       <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 4px;" title="Stretch weeks to fill the printed page">
         <input type="checkbox" id="fillPageToggle" style="cursor: pointer;" checked>
         <span>Fill Page</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 4px;" title="Leave out events with (Draft) in the name">
+        <input type="checkbox" id="hideDraftsToggle" style="cursor: pointer;">
+        <span>Hide Drafts</span>
       </label>
       <div class="font-size-control">
         <label>Event Text Size:</label>

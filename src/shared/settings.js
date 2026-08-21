@@ -155,7 +155,7 @@ var CompassToolkit = (function () {
       key: "calendarPrinter",
       colour: { base: "#2e7d32", strong: "#226325", soft: "#e8f4e9" },
       name: "Term Calendar Printer",
-      version: "1.6",
+      version: "1.7",
       icon: "calendar",
       description:
         "Captures the whole-term calendar view and opens it as a printable page.",

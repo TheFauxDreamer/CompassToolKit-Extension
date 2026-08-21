@@ -4,6 +4,17 @@ let currentView = 'term';
 let enabledLayers = new Set();
 let eventLayers = new Map(); // Map of color to layer info
 let hideWeekends = false;
+let hideDrafts = false;
+
+/* An event Compass has not finalised yet. Schools mark these by putting
+ * (Draft) in the name, anywhere in it, and the casing is not consistent.
+ * Declared up here because it is read from functions that run well before the
+ * bottom of this file would have been reached. */
+const DRAFT = /\(\s*draft\s*\)/i;
+
+function isDraft(event) {
+  return DRAFT.test(event.title || '');
+}
 let paperSize = 'a4';
 let fillPage = true; // Stretch weeks to the bottom of the printed page
 let eventFontSize = 9; // Default font size in pixels
@@ -141,6 +152,12 @@ function setupEventListeners() {
   });
 
   // Fill page toggle
+  document.getElementById('hideDraftsToggle').addEventListener('change', (e) => {
+    hideDrafts = e.target.checked;
+    renderLayerFilters();
+    renderCalendar();
+  });
+
   document.getElementById('fillPageToggle').addEventListener('change', (e) => {
     fillPage = e.target.checked;
     updateFillPage();
@@ -210,6 +227,24 @@ function identifyLayers() {
   });
   
   renderLayerFilters();
+  showDraftCount();
+}
+
+/* Drafts are only worth offering to hide when there are some. Saying how many
+ * also makes it obvious the option did something, which a calendar with two
+ * drafts in it otherwise would not. */
+function showDraftCount() {
+  const toggle = document.getElementById('hideDraftsToggle');
+  if (!toggle) return;
+  const label = toggle.parentElement;
+  const drafts = allEvents.filter(isDraft).length;
+  if (!drafts) {
+    label.style.display = 'none';
+    return;
+  }
+  label.style.display = 'flex';
+  const text = label.querySelector('span');
+  if (text) text.textContent = `Hide Drafts (${drafts})`;
 }
 
 // Update layer names from HTML data if available
@@ -217,7 +252,7 @@ function updateLayerNames(layerDataFromHTML) {
   console.log('[UPDATE LAYERS] ========== Starting Layer Name Update ==========');
   
   if (!layerDataFromHTML || !layerDataFromHTML.layers) {
-    console.log('[UPDATE LAYERS] No layer names captured — keeping colour labels');
+    console.log('[UPDATE LAYERS] No layer names captured, so keeping colour labels');
     return;
   }
   
@@ -250,7 +285,7 @@ function updateLayerNames(layerDataFromHTML) {
     } else {
       // Normal: a calendar layer with no events in the captured term has no
       // colour to match against. Not a fault, so don't log it as one.
-      console.log(`  "${htmlLayer.name}" has no events in this term — skipped`);
+      console.log(`  "${htmlLayer.name}" has no events in this term, so skipped`);
     }
   });
   
@@ -259,6 +294,22 @@ function updateLayerNames(layerDataFromHTML) {
   console.log('[UPDATE LAYERS] ========================================');
   
   renderLayerFilters();
+}
+
+// What a layer amounts to as things currently stand: how many of its events
+// would print, and one of them to name as an example. Both are worked out now
+// rather than at load, so hiding drafts takes them off these labels too and
+// cannot leave a hidden event standing as the sample.
+function summariseLayer(color) {
+  let count = 0;
+  let sample = null;
+  allEvents.forEach(event => {
+    if (hideDrafts && isDraft(event)) return;
+    if ((event.backgroundColor || '#e9ecef').toUpperCase() !== color) return;
+    count++;
+    if (sample === null) sample = event.title;
+  });
+  return { count: count, sample: sample };
 }
 
 // Render layer filter checkboxes
@@ -290,15 +341,18 @@ function renderLayerFilters() {
     const labelElem = document.createElement('label');
     labelElem.htmlFor = layer.id;
     
+    const summary = summariseLayer(color);
+    const sample = summary.sample || layer.sampleTitle;
+    
     // Use layer name if available, otherwise show event count
-    const displayName = layer.name || `${layer.count} events`;
+    const displayName = layer.name || `${summary.count} events`;
     labelElem.textContent = displayName;
     labelElem.style.cursor = 'pointer';
     
     // Show sample event in tooltip
     const tooltipText = layer.name 
-      ? `${layer.count} events - Sample: ${layer.sampleTitle}` 
-      : `Sample: ${layer.sampleTitle}`;
+      ? `${summary.count} events - Sample: ${sample}` 
+      : `Sample: ${sample}`;
     labelElem.title = tooltipText;
     
     filterDiv.appendChild(checkbox);
@@ -349,9 +403,10 @@ function renderLayerFilters() {
   });
 }
 
-// Filter events based on enabled layers
+// Filter events based on enabled layers, and on whether drafts are wanted
 function getFilteredEvents() {
   return allEvents.filter(event => {
+    if (hideDrafts && isDraft(event)) return false;
     const color = (event.backgroundColor || '#e9ecef').toUpperCase();
     return enabledLayers.has(color);
   });
