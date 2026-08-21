@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Nine Compass improvements in one extension. Each can be turned on or off from
+Ten Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -60,6 +60,22 @@ and lets you:
 - hide weekends
 - switch between A4 and A3
 - adjust the event text size to fit more on the page
+
+## Preferred Calendar View
+
+Compass always opens the calendar on **Week** view. This switches it to the
+view you actually use as the page loads.
+
+- **Open the calendar on**: Day, Week, Month, Term or List. Set to **Term** to
+  start with.
+
+It switches once, as the page comes up. Changing view by hand afterwards
+sticks, and nothing pulls you back. If Compass is slow to draw its toolbar it
+waits for it, and if the view still won't move it leaves the page alone rather
+than clicking at it.
+
+Set this to **Term** and the Term Calendar Printer is always ready to capture,
+since that is the view it needs.
 
 ## Chronicle Anywhere
 

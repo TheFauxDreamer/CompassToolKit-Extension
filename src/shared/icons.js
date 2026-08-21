@@ -39,6 +39,11 @@ var CompassToolkitIcons = (function () {
       ["line", { x1: "8", y1: "2", x2: "8", y2: "6" }],
       ["line", { x1: "3", y1: "10", x2: "21", y2: "10" }]
     ],
+    layout: [
+      ["rect", { x: "3", y: "3", width: "18", height: "18", rx: "2" }],
+      ["line", { x1: "3", y1: "9", x2: "21", y2: "9" }],
+      ["line", { x1: "9", y1: "9", x2: "9", y2: "21" }]
+    ],
     filter: [
       ["polygon", { points: "22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" }]
     ],

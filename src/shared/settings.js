@@ -163,6 +163,33 @@ var CompassToolkit = (function () {
       settings: []
     },
     {
+      key: "calendarView",
+      colour: { base: "#5d4037", strong: "#46302a", soft: "#efe9e7" },
+      name: "Preferred Calendar View",
+      version: "1.0",
+      icon: "layout",
+      description:
+        "Opens the calendar on the view you use, instead of the Week view Compass starts on.",
+      where: "Calendar page",
+      settings: [
+        {
+          key: "view",
+          type: "select",
+          label: "Open the calendar on",
+          description:
+            "Which view the calendar switches to as it loads. Changing view by hand afterwards is left alone.",
+          options: [
+            { value: "day", label: "Day" },
+            { value: "week", label: "Week" },
+            { value: "month", label: "Month" },
+            { value: "multiweek", label: "Term" },
+            { value: "list", label: "List" }
+          ],
+          default: "multiweek"
+        }
+      ]
+    },
+    {
       key: "chronicleAnywhere",
       colour: { base: "#6a1b9a", strong: "#55137c", soft: "#f3e9f8" },
       name: "Chronicle Anywhere",
