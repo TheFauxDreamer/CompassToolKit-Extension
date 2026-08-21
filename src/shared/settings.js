@@ -15,7 +15,8 @@ var CompassToolkit = (function () {
     "(DOE Integration)",
     "(Program Kaartdijin)",
     "Kaartdijin",
-    "(STIMS)"
+    "(STIMS)",
+    "(STMS)"
   ];
 
   /* Pre-written wording, offered from a button inside the chronicle entry
@@ -289,7 +290,7 @@ var CompassToolkit = (function () {
       key: "directoryFilter",
       colour: { base: "#00838f", strong: "#006670", soft: "#e0f2f4" },
       name: "Clean Staff Directory",
-      version: "1.0",
+      version: "1.1",
       icon: "filter",
       description:
         "Hides system and support accounts from the staff directory.",
@@ -303,6 +304,14 @@ var CompassToolkit = (function () {
             "Any staff card whose name contains one of these phrases is hidden.",
           placeholder: "e.g. (STIMS)",
           default: DEFAULT_DIRECTORY_FILTERS
+        },
+        {
+          key: "showAll",
+          type: "toggle",
+          label: "Show everyone on one page",
+          description:
+            "Reads through the pages and puts the whole directory in one list. Hidden accounts still take up their place in Compass's count, so without this they push real staff onto a later page.",
+          default: true
         }
       ]
     },

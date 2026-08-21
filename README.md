@@ -163,6 +163,32 @@ people.
 - **Hide names containing**: an editable list of phrases. Any staff card whose
   name contains one of them is hidden. Comes with `(DOE Integration)`,
   `(Program Kaartdijin)`, `Kaartdijin` and `(STIMS)`; add or remove as you like.
+- **Show everyone on one page**: reads through the directory's pages and puts
+  them all in one list. On by default.
+
+Compass pages the directory before any of this hides anything, so a page
+arrives with the system accounts still counted in it and comes out short, with
+real staff pushed onto a second page. Turning Compass's own page size up cannot
+fix that: the largest it offers is a hundred, and a school with more real staff
+than that is still split.
+
+With **Show everyone on one page** on, the page size goes to its largest, each
+page is read in turn, and the results are put back together under their own
+Active and Inactive headings.
+
+The list is covered from the moment Compass draws its first card until it is
+finished, so you never see the unfiltered version appear and then have thirty
+accounts taken out of it, and you never watch it jump between pages on the way.
+While the pages are being read it says **Loading the full staff list**. If
+anything stalls, the list is shown regardless.
+
+Searching, sorting and the status filter all behave normally. Each of them
+gives a different set of people, so the assembled list is dropped the moment
+one changes and Compass's own results are shown instead. If those results
+still run to more than one page they are read into one list the same way. The pager disappears and the count is replaced
+with one that describes what you can actually see, so **Showing 1-100 of 134**
+becomes **Showing all 100 (34 hidden)**. Searching or sorting still works; the
+list is rebuilt behind you when it does.
 
 ## No New Tabs
 

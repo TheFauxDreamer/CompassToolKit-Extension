@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Compass Toolkit",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "description": "A set of Compass improvements in one extension: timetable printing, clearance forms, term calendars, chronicle snippets, directory filtering and fewer new tabs.",
   "permissions": [
     "storage"
