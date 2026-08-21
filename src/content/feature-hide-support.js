@@ -1,4 +1,4 @@
-/* Compass Toolkit — Hide Support Button.
+/* Compass Toolkit: Hide Support Button.
  *
  * Compass loads Intercom, which parks a help bubble in the bottom-left corner
  * of every page. This hides it.

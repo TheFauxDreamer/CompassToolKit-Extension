@@ -1,7 +1,7 @@
-/* Compass Toolkit — popup menu styles. */
+/* Compass Toolkit: popup menu styles. */
 
 :root {
-  /* Light only — `color-scheme` stops Chrome tinting the scrollbar and text
+  /* Light only. `color-scheme` stops Chrome tinting the scrollbar and text
      inputs dark when the operating system is in dark mode. */
   color-scheme: light;
 
@@ -467,13 +467,13 @@ input[type="text"]:focus {
   color: var(--accent);
 }
 
-/* ---------------- chronicle notes ---------------- */
+/* ---------------- chronicle snippets ---------------- */
 
-.note-list {
+.snippet-list {
   margin: 9px 0 0;
 }
 
-.note {
+.snippet {
   padding: 7px 8px;
   margin-bottom: 6px;
   background: var(--bg);
@@ -481,13 +481,13 @@ input[type="text"]:focus {
   border-radius: 6px;
 }
 
-.note-head {
+.snippet-head {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.note-title {
+.snippet-title {
   flex: 1;
   min-width: 0;
   font-size: 12px;
@@ -497,8 +497,8 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
-/* Which field the note is tied to, or that it is offered in all of them. */
-.note-scope {
+/* Which field the snippet is tied to, or that it is offered in all of them. */
+.snippet-scope {
   flex-shrink: 0;
   max-width: 110px;
   padding: 1px 6px;
@@ -511,12 +511,12 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
-.note-scope.all {
+.snippet-scope.all {
   color: var(--text-muted);
   background: var(--bg-sunken);
 }
 
-.note-actions {
+.snippet-actions {
   display: flex;
   flex-shrink: 0;
   gap: 2px;
@@ -541,7 +541,7 @@ input[type="text"]:focus {
   color: var(--text);
 }
 
-/* Armed for deletion — one more click and the note is gone. */
+/* Armed for deletion: one more click and the snippet is gone. */
 .icon-btn.armed,
 .icon-btn.armed:hover {
   padding: 3px 6px;
@@ -549,11 +549,11 @@ input[type="text"]:focus {
   background: var(--danger);
 }
 
-.note-preview {
+.snippet-preview {
   margin-top: 3px;
   font-size: 11px;
   color: var(--text-muted);
-  /* Two lines is enough to recognise a note without the list running away. */
+  /* Two lines is enough to recognise a snippet without the list running away. */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -562,12 +562,12 @@ input[type="text"]:focus {
   overflow-wrap: anywhere;
 }
 
-.note-restore {
+.snippet-restore {
   display: block;
   margin-top: 8px;
 }
 
-.note-form {
+.snippet-form {
   margin-top: 9px;
 }
 
@@ -578,8 +578,8 @@ input[type="text"]:focus {
   font-weight: 500;
 }
 
-.note-form input[type="text"],
-.note-form textarea {
+.snippet-form input[type="text"],
+.snippet-form textarea {
   display: block;
   width: 100%;
 }

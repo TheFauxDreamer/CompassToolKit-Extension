@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Compass Toolkit",
-  "version": "1.1.0",
-  "description": "A set of Compass improvements — timetable printing, clearance forms, term calendars, directory filtering and fewer new tabs — in one extension.",
+  "version": "1.2.0",
+  "description": "A set of Compass improvements in one extension: timetable printing, clearance forms, term calendars, chronicle snippets, directory filtering and fewer new tabs.",
   "permissions": [
     "storage"
   ],
@@ -37,7 +37,7 @@
         "src/shared/icons.js",
         "src/content/feature-no-new-tabs.js",
         "src/content/feature-chronicle.js",
-        "src/content/feature-chronicle-templates.js",
+        "src/content/feature-chronicle-snippets.js",
         "src/content/feature-hide-support.js",
         "src/content/feature-directory-filter.js",
         "src/content/feature-attendance-notes.js",

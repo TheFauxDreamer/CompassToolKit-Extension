@@ -1,4 +1,4 @@
-/* Compass Toolkit — No New Tabs.
+/* Compass Toolkit: No New Tabs.
  *
  * Compass marks nearly every link target="_blank", so ordinary navigation
  * litters the window with tabs. This strips that attribute, with two

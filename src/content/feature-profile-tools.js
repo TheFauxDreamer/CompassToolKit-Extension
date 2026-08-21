@@ -1,4 +1,4 @@
-/* Compass Toolkit — Timetable Printer and Clearance Form.
+/* Compass Toolkit: Timetable Printer and Clearance Form.
  *
  * Both features live on the same page (a profile's Schedule tab) and are built
  * from the same two API responses, so they share one listener and one cache
@@ -45,8 +45,8 @@
     }
   });
 
-  // Data captured earlier in the session is still usable — the page does not
-  // always re-request it when you come back to the Schedule tab.
+  // Data captured earlier in the session is still usable, because the page
+  // does not always re-request it when you come back to the Schedule tab.
   CompassToolkit.getData([KEYS.periods, KEYS.events, KEYS.school]).then(
     function (stored) {
       if (stored[KEYS.periods]) periodsData = stored[KEYS.periods];
@@ -115,7 +115,7 @@
     line-height: 1.2;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-    /* Not "all" — these buttons restack when the other one appears, and the
+    /* Not "all": these buttons restack when the other one appears, and the
        move should be instant rather than animated. */
     transition: background 0.3s, transform 0.3s;
     font-family: system-ui, -apple-system, sans-serif;

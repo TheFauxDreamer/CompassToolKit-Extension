@@ -1,7 +1,7 @@
-/* Compass Toolkit — inline SVG icons.
+/* Compass Toolkit: inline SVG icons.
  *
  * Line icons on a 24×24 grid, drawn with `currentColor` so they take the
- * colour of whatever they sit in — white on the in-page buttons, the text
+ * colour of whatever they sit in: white on the in-page buttons, the text
  * colour in the popup. Shared by the popup, the content scripts and the
  * printable pages so one icon means the same thing everywhere.
  */
@@ -151,7 +151,7 @@ var CompassToolkitIcons = (function () {
     return Object.prototype.hasOwnProperty.call(ICONS, name);
   }
 
-  /* Build an <svg> element. Preferred over markup() — no HTML parsing, and
+  /* Build an <svg> element. Preferred over markup(): no HTML parsing, and
    * safe to use where innerHTML would be awkward. */
   function create(name, size) {
     const svg = document.createElementNS(NS, "svg");

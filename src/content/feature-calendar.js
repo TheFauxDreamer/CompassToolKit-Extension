@@ -1,4 +1,4 @@
-/* Compass Toolkit — Term Calendar Printer (page side).
+/* Compass Toolkit: Term Calendar Printer (page side).
  *
  * The calendar only ever holds one term's events in memory, so capture is
  * driven from the popup: it asks this script to pull whatever the page has

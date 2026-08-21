@@ -1,4 +1,4 @@
-/* Compass Toolkit — page-context interceptor (MAIN world).
+/* Compass Toolkit: page-context interceptor (MAIN world).
  *
  * Compass loads its timetable and calendar data over XHR/fetch, and there is
  * no way to read those responses from an isolated content script. This runs in
@@ -29,8 +29,8 @@
 
   /* ---------------- school name / logo ---------------- */
 
-  // Compass.schoolName is set by the page's own scripts, which have not run at
-  // document_start — retry as the page comes up.
+  // Compass.schoolName is set by the page's own scripts, which have not run
+  // at document_start, so retry as the page comes up.
   let schoolPosted = false;
   function postSchoolInfo() {
     if (schoolPosted) return;
@@ -67,7 +67,7 @@
       // Recoverable: the calendar renders without names. Logged, not warned,
       // so it doesn't show up as an extension fault.
       console.log(
-        "[Compass Toolkit] Calendar layer list not visible — capturing without layer names"
+        "[Compass Toolkit] Calendar layer list not visible, capturing without layer names"
       );
       return layers;
     }
@@ -172,7 +172,7 @@
         }
       }
     } catch (e) {
-      // Not JSON, or a response we don't care about — ignore.
+      // Not JSON, or a response we don't care about, so ignore it.
     }
   }
 

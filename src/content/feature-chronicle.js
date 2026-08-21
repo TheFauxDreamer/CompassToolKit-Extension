@@ -1,4 +1,4 @@
-/* Compass Toolkit — Chronicle Anywhere.
+/* Compass Toolkit: Chronicle Anywhere.
  *
  * Compass only lets you create a chronicle entry from the Chronicle page. This
  * puts a button on every page that opens that page in a modal over whatever
@@ -126,8 +126,8 @@
   }
 
   /* Is something already sitting at this point? Only fixed and sticky things
-   * count — the page scrolls underneath the button, so ordinary content isn't
-   * a clash. */
+   * count, since the page scrolls underneath the button, so ordinary content
+   * isn't a clash. */
   function isOccupied(x, y) {
     const px = Math.min(Math.max(x, 0), window.innerWidth - 1);
     const py = Math.min(Math.max(y, 0), window.innerHeight - 1);
@@ -140,7 +140,7 @@
 
       /* Don't dodge the support bubble when it is being hidden. Both features
        * react to the same settings change and this one runs first, so the
-       * bubble is often still on screen at this point — going by the setting
+       * bubble is often still on screen at this point. Going by the setting
        * rather than by what is currently painted avoids that race. */
       if (supportHidden && el.closest && el.closest(HELP_SELECTOR)) {
         return false;
@@ -162,7 +162,7 @@
     });
   }
 
-  /* Sample a grid across the whole button, not just its centre — the help
+  /* Sample a grid across the whole button, not just its centre. The help
    * bubble is far narrower than the button and sits under one end of it, so a
    * single centre probe walks straight past it. */
   function areaIsClear(left, top, width, height) {
@@ -212,8 +212,8 @@
   }
 
   /* Find a free spot for the button, preferring to slide sideways along the
-   * edge — sitting next to the help bubble reads better than hovering above
-   * it. Moving away from the edge is only a fallback for when the whole row
+   * edge, since sitting next to the help bubble reads better than hovering
+   * above it. Moving away from the edge is only a fallback for when the row
    * is taken. */
   function findClearSpot(spec) {
     const width = button.offsetWidth || 170;
@@ -240,7 +240,7 @@
       }
     }
 
-    // 2. The row is full — move away from the edge instead.
+    // 2. The row is full, so move away from the edge instead.
     for (
       let offset = EDGE_GAP + PROBE_STEP;
       offset <= PROBE_LIMIT;
@@ -455,7 +455,7 @@
       const doc = frame.contentDocument;
       return doc && doc.body ? doc : null;
     } catch (e) {
-      return null; // cross-origin — shouldn't happen on Compass
+      return null; // cross-origin, which shouldn't happen on Compass
     }
   }
 
@@ -566,9 +566,9 @@
 
       if (Date.now() > deadline) {
         clearInterval(poll);
-        // The page is still usable — the user can click the button themselves.
+        // The page is still usable: the user can click the button themselves.
         status.textContent =
-          "Couldn't open the form automatically — use the Chronicle page below.";
+          "Couldn't open the form automatically. Use the Chronicle page below.";
         console.log(
           "[Compass Toolkit] Chronicle: no entry dialog found. Create controls seen:",
           Array.from(doc.querySelectorAll('a, button, .x-btn'))
@@ -601,14 +601,14 @@
     Array.from(doc.body.children).forEach(function (child) {
       if (child === top) return;
       if (child.contains(dialog)) return;
-      // Leave ExtJS's own overlays alone — masks, shadows, tooltips, menus.
+      // Leave ExtJS's own overlays alone: masks, shadows, tooltips, menus.
       if (/x-mask|x-shadow|x-tip|x-menu|x-layer/.test(child.className || "")) {
         return;
       }
-      /* Chronicle Templates parks its in-field buttons in a fixed layer of its
+      /* Chronicle Snippets parks its in-field buttons in a fixed layer of its
        * own, outside the dialog. Hiding it would take the buttons off the very
        * form this modal exists to show. */
-      if (child.hasAttribute && child.hasAttribute("data-ct-templates")) return;
+      if (child.hasAttribute && child.hasAttribute("data-ct-snippets")) return;
       child.style.display = "none";
     });
 
@@ -677,8 +677,8 @@
   /* ---------------- wiring ---------------- */
 
   /* Watched separately, because observeFeature only reports changes to its own
-   * feature — toggling Hide Support Button would otherwise leave this button
-   * indented around a bubble that is no longer there. */
+   * feature, and toggling Hide Support Button would otherwise leave this
+   * button indented around a bubble that is no longer there. */
   CompassToolkit.observeFeature("hideSupportButton", function (settings) {
     supportHidden = !!settings.enabled;
     CompassToolkit.whenReady(applyPosition);

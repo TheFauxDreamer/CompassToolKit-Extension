@@ -1,4 +1,4 @@
-/* Compass Toolkit — popup menu.
+/* Compass Toolkit: popup menu.
  *
  * Renders one row per feature from the schema in settings.js: a switch to turn
  * it on or off, and, for features that have them, a panel of sub-settings that
@@ -10,7 +10,7 @@
   const CALENDAR_PAGE = "pages/calendar.html";
 
   let settings = null;
-  let templates = []; // chronicle notes — stored under their own key
+  let snippets = []; // chronicle snippets, stored under their own key
   const listEl = document.getElementById("features");
   const summaryEl = document.getElementById("summary");
 
@@ -164,7 +164,7 @@
       const items = values();
 
       if (items.length === 0) {
-        const note = el("div", "empty-note", "No phrases — nothing is hidden.");
+        const note = el("div", "empty-note", "No phrases, so nothing is hidden.");
         chips.appendChild(note);
         return;
       }
@@ -229,23 +229,23 @@
     return wrap;
   }
 
-  /* ---------------- chronicle notes panel ---------------- */
+  /* ---------------- chronicle snippets panel ---------------- */
 
-  /* An editor for the pre-written notes. The panel swaps between a list of
-   * what's there and a form for one note, rather than editing in place: at
+  /* An editor for the saved snippets. The panel swaps between a list of what
+   * is there and a form for one snippet, rather than editing in place: at
    * 380px wide there is no room to show both. */
-  function buildTemplatesPanel() {
+  function buildSnippetsPanel() {
     const wrap = el("div", "sub-setting");
-    wrap.appendChild(el("div", "sub-label", "Pre-written notes"));
+    wrap.appendChild(el("div", "sub-label", "Saved snippets"));
     wrap.appendChild(
       el(
         "div",
         "sub-desc",
-        "Offered from a Notes button inside the chronicle entry form. Give a note a field to show it only there; leave the field blank and it shows in every chronicle field."
+        "Offered from a Snippets button inside the chronicle entry form. Give a snippet a field to show it only there; leave the field blank and it shows in every chronicle field."
       )
     );
 
-    const body = el("div", "note-body");
+    const body = el("div", "snippet-body");
     const status = el("div", "status");
     status.hidden = true;
     wrap.appendChild(body);
@@ -262,11 +262,11 @@
       status.appendChild(el("span", null, message));
     }
 
-    /* Sync rejects an item over 8KB, which a long enough list of notes can
-     * reach. Saying so beats a note quietly vanishing on the next reload. */
+    /* Sync rejects an item over 8KB, which a long enough list of snippets can
+     * reach. Saying so beats one quietly vanishing on the next reload. */
     function explain(error) {
       if (/quota/i.test(error || "")) {
-        return "There is too much text here for Chrome to sync. Shorten or delete a note and try again.";
+        return "There is too much text here for Chrome to sync. Shorten or delete a snippet and try again.";
       }
       return error || "Chrome refused the change.";
     }
@@ -274,11 +274,11 @@
     // The list is only replaced once the write succeeds, so what is on screen
     // always matches what is stored.
     function persist(next, onSaved) {
-      const previous = templates;
-      templates = next;
-      CompassToolkit.saveTemplates(next).then(function (result) {
+      const previous = snippets;
+      snippets = next;
+      CompassToolkit.saveSnippets(next).then(function (result) {
         if (!result.ok) {
-          templates = previous;
+          snippets = previous;
           renderList();
           setStatus("Not saved. " + explain(result.error), "error");
           return;
@@ -300,40 +300,40 @@
 
     function renderList() {
       body.innerHTML = "";
-      const list = el("div", "note-list");
+      const list = el("div", "snippet-list");
 
-      if (!templates.length) {
+      if (!snippets.length) {
         list.appendChild(
           el(
             "div",
             "empty-note",
-            "No notes — the button won't appear until you add one."
+            "No snippets yet. The button appears once you add one."
           )
         );
       }
 
-      templates.forEach(function (note, index) {
-        const row = el("div", "note");
+      snippets.forEach(function (snippet, index) {
+        const row = el("div", "snippet");
 
-        const head = el("div", "note-head");
-        head.appendChild(el("span", "note-title", note.title));
+        const head = el("div", "snippet-head");
+        head.appendChild(el("span", "snippet-title", snippet.title));
         const scope = el(
           "span",
-          "note-scope" + (note.field ? "" : " all"),
-          note.field || "All fields"
+          "snippet-scope" + (snippet.field ? "" : " all"),
+          snippet.field || "All fields"
         );
-        scope.title = note.field
-          ? 'Only fields whose label contains "' + note.field + '"'
+        scope.title = snippet.field
+          ? 'Only fields whose label contains "' + snippet.field + '"'
           : "Offered in every chronicle field";
         head.appendChild(scope);
 
-        const actions = el("div", "note-actions");
-        const edit = actionButton("note", "Edit " + note.title);
+        const actions = el("div", "snippet-actions");
+        const edit = actionButton("note", "Edit " + snippet.title);
         edit.addEventListener("click", function () {
-          renderEditor(note);
+          renderEditor(snippet);
         });
 
-        const remove = actionButton("trash", "Delete " + note.title);
+        const remove = actionButton("trash", "Delete " + snippet.title);
         let armed = null;
         remove.addEventListener("click", function () {
           // Two-step, like resetting: there is no undo once it is gone.
@@ -349,7 +349,7 @@
             return;
           }
           clearTimeout(armed);
-          const next = templates.slice();
+          const next = snippets.slice();
           next.splice(index, 1);
           persist(next);
         });
@@ -359,44 +359,44 @@
         head.appendChild(actions);
 
         row.appendChild(head);
-        row.appendChild(el("div", "note-preview", note.text));
+        row.appendChild(el("div", "snippet-preview", snippet.text));
         list.appendChild(row);
       });
 
       body.appendChild(list);
 
-      const add = iconButton("btn block", "plus", "Add a note");
+      const add = iconButton("btn block", "plus", "Add a snippet");
       add.addEventListener("click", function () {
         renderEditor(null);
       });
       body.appendChild(add);
 
       // Offered only while something built-in is actually missing, and it adds
-      // rather than replaces, so edited notes are left alone.
-      const missing = CompassToolkit.defaultTemplates().filter(function (note) {
-        return !templates.some(function (existing) {
-          return existing.id === note.id;
+      // rather than replaces, so edited snippets are left alone.
+      const missing = CompassToolkit.defaultSnippets().filter(function (snippet) {
+        return !snippets.some(function (existing) {
+          return existing.id === snippet.id;
         });
       });
       if (missing.length) {
         const restore = el(
           "button",
-          "link-btn note-restore",
-          "Add the " + missing.length + " missing built-in notes"
+          "link-btn snippet-restore",
+          "Add the " + missing.length + " missing built-in snippets"
         );
         restore.type = "button";
         restore.addEventListener("click", function () {
-          persist(templates.concat(missing));
+          persist(snippets.concat(missing));
         });
         body.appendChild(restore);
       }
     }
 
-    function renderEditor(note) {
+    function renderEditor(snippet) {
       body.innerHTML = "";
       setStatus(null);
 
-      const form = el("div", "note-form");
+      const form = el("div", "snippet-form");
 
       function labelled(text, control, hint) {
         form.appendChild(el("label", "field-label", text));
@@ -407,27 +407,27 @@
       const title = document.createElement("input");
       title.type = "text";
       title.placeholder = "e.g. Minor injury";
-      title.value = note ? note.title : "";
+      title.value = snippet ? snippet.title : "";
       labelled("Name", title);
 
       const field = document.createElement("input");
       field.type = "text";
       field.placeholder = "Leave blank for every field";
-      field.value = note ? note.field : "";
+      field.value = snippet ? snippet.field : "";
       labelled(
         "Chronicle field",
         field,
-        "Matched against the field's label in the entry form — part of the label is enough."
+        "Matched against the field's label in the entry form. Part of the label is enough."
       );
 
       const text = document.createElement("textarea");
       text.rows = 6;
-      text.placeholder = "The note to insert…";
-      text.value = note ? note.text : "";
-      labelled("Note", text);
+      text.placeholder = "The text to insert…";
+      text.value = snippet ? snippet.text : "";
+      labelled("Snippet", text);
 
       const buttons = el("div", "row-btns");
-      const save = el("button", "btn", note ? "Save changes" : "Add note");
+      const save = el("button", "btn", snippet ? "Save changes" : "Add snippet");
       save.type = "button";
       const cancel = el("button", "btn secondary", "Cancel");
       cancel.type = "button";
@@ -439,18 +439,18 @@
           text: text.value
         };
         if (!values.title || !values.text.trim()) {
-          setStatus("A note needs a name and some text.", "error");
+          setStatus("A snippet needs a name and some text.", "error");
           return;
         }
 
-        const next = templates.slice();
-        if (note) {
+        const next = snippets.slice();
+        if (snippet) {
           const index = next.findIndex(function (item) {
-            return item.id === note.id;
+            return item.id === snippet.id;
           });
           if (index !== -1) {
             next[index] = {
-              id: note.id,
+              id: snippet.id,
               title: values.title,
               field: values.field,
               text: values.text
@@ -458,7 +458,7 @@
           }
         } else {
           next.push({
-            id: CompassToolkit.newTemplateId(),
+            id: CompassToolkit.newSnippetId(),
             title: values.title,
             field: values.field,
             text: values.text
@@ -672,8 +672,8 @@
       panel.appendChild(buildCalendarPanel());
     }
 
-    if (feature.custom === "chronicleTemplates") {
-      panel.appendChild(buildTemplatesPanel());
+    if (feature.custom === "chronicleSnippets") {
+      panel.appendChild(buildSnippetsPanel());
     }
 
     return panel;
@@ -760,8 +760,8 @@
 
   /* ---------------- boot ---------------- */
 
-  // Two-step rather than a confirm() dialogue — resetting throws away any
-  // directory filter phrases the user has added.
+  // Two-step rather than a confirm() dialogue, because resetting throws away
+  // any directory filter phrases the user has added.
   const resetBtn = document.getElementById("resetBtn");
   let resetArmed = false;
   let resetTimer = null;
@@ -781,8 +781,8 @@
     resetArmed = false;
     resetBtn.textContent = "Reset to defaults";
     settings = CompassToolkit.defaults();
-    templates = CompassToolkit.defaultTemplates();
-    Promise.all([save(), CompassToolkit.saveTemplates(templates)]).then(render);
+    snippets = CompassToolkit.defaultSnippets();
+    Promise.all([save(), CompassToolkit.saveSnippets(snippets)]).then(render);
   });
 
   const manifest = chrome.runtime.getManifest();
@@ -790,10 +790,10 @@
 
   Promise.all([
     CompassToolkit.getSettings(),
-    CompassToolkit.getTemplates()
+    CompassToolkit.getSnippets()
   ]).then(function (loaded) {
     settings = loaded[0];
-    templates = loaded[1];
+    snippets = loaded[1];
     render();
   });
 })();

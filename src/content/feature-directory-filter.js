@@ -1,4 +1,4 @@
-/* Compass Toolkit — Clean Staff Directory.
+/* Compass Toolkit: Clean Staff Directory.
  *
  * Hides staff cards whose name contains any of the configured phrases, so
  * integration and system accounts stop cluttering the directory.
@@ -29,7 +29,7 @@
       card.style.display = "none";
       card.dataset.compassFiltered = "true";
     } else if (card.dataset.compassFiltered) {
-      // Previously hidden — the filters (or the feature) changed.
+      // Previously hidden, so the filters (or the feature) changed.
       card.style.display = "";
       delete card.dataset.compassFiltered;
     }
@@ -51,7 +51,7 @@
       });
   }
 
-  // The directory is a React list — pagination, search and sorting all
+  // The directory is a React list: pagination, search and sorting all
   // re-render it, so new cards have to be caught as they arrive.
   function startObserver() {
     if (observer) return;

@@ -1,11 +1,11 @@
-/* Compass Toolkit — Quick Attendance Notes.
+/* Compass Toolkit: Quick Attendance Notes.
  *
  * Clicking the "Attendance Notes require review" alert on the home page lands
  * you on the Attendance page's default tab, so the notes are always one more
  * click away. This flags the click, then activates the Notes tab on arrival.
  *
- * The flag is what keeps ordinary visits to /Organise/Attendance/ untouched —
- * only a click on the notification jumps to Notes.
+ * The flag is what keeps ordinary visits to /Organise/Attendance/ untouched.
+ * Only a click on the notification jumps to Notes.
  */
 (function () {
   "use strict";
@@ -53,7 +53,7 @@
       try {
         sessionStorage.setItem(FLAG, String(Date.now()));
       } catch (_) {
-        /* private mode / storage blocked — nothing we can do */
+        /* private mode or storage blocked, nothing we can do */
       }
       watchForSoftNavigation();
     },
@@ -140,7 +140,7 @@
 
   function start() {
     if (!enabled || !onAttendancePage() || !flagIsFresh()) return;
-    clearFlag(); // one shot — a later refresh won't re-trigger
+    clearFlag(); // one shot, so a later refresh won't re-trigger
 
     const deadline = Date.now() + GIVE_UP_MS;
     let clicks = 0;
@@ -163,7 +163,7 @@
       clicks++;
       clickTab(tab);
 
-      // Verify shortly after — ExtJS applies the active class on its own turn.
+      // Verify shortly after: ExtJS applies the active class on its own turn.
       setTimeout(function () {
         const t = findNotesTab();
         if (t && isActive(t)) stop();

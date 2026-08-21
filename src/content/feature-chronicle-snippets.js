@@ -1,14 +1,14 @@
-/* Compass Toolkit — Chronicle Templates.
+/* Compass Toolkit: Chronicle Snippets.
  *
- * The same chronicle entries get written over and over — an injury, a knock to
- * the head, a phone confiscated — so this offers pre-written notes from a small
+ * The same chronicle entries get written over and over: an injury, a knock to
+ * the head, a phone confiscated. This offers pre-written wording from a small
  * button sitting inside the entry form's own fields. Picking one drops its text
  * into that field; Compass's form does the saving, exactly as if it had been
  * typed.
  *
- * A note can name a field. When it does, its button only turns up in fields
- * whose label contains that name, so an injury note can be tied to the injury
- * field. When it doesn't, the note is offered in every field of the entry form,
+ * A snippet can name a field. When it does, its button only turns up in fields
+ * whose label contains that name, so an injury snippet can be tied to the injury
+ * field. When it doesn't, the snippet is offered in every field of the entry form,
  * which is how the built-in ones ship: the fields on a chronicle entry are
  * configured per school, so nothing here can guess their names.
  *
@@ -19,8 +19,8 @@
  * JavaScript.
  *
  * The fallback is a fixed layer that floats over the field instead, touching
- * nothing Compass owns. It costs a reposition on every scroll — which is a
- * frame behind the content, and looks it — so it is the setting to reach for
+ * nothing Compass owns. It costs a reposition on every scroll, which lands a
+ * frame behind the content and looks it, so it is the setting to reach for
  * only if putting the button in the form upsets a school's layout.
  *
  * This runs in every frame, not just the top one, so the buttons appear in the
@@ -30,7 +30,7 @@
 (function () {
   "use strict";
 
-  const FEATURE = "chronicleTemplates";
+  const FEATURE = "chronicleSnippets";
   const SWEEP_MS = 300; // reposition and rescan while a form is open
   const CHRONICLE_HINT = /chronicle/i;
   const FIELD_SELECTOR =
@@ -38,7 +38,7 @@
     ' [contenteditable="plaintext-only"]';
 
   let config = { enabled: false, insertMode: "cursor", placement: "inline" };
-  let templates = [];
+  let snippets = [];
   let root = null; // the fixed layer holding every button
   let menu = null; // the open dropdown, if any
   let menuOwner = null; // the entry it belongs to
@@ -60,7 +60,7 @@
 
     /* A titled window is judged on its title alone. Falling back to the whole
      * window's text whenever the title missed would match anything that merely
-     * mentions the word — a profile page's Chronicle tab, say — and hang
+     * mentions the word, such as a profile page's Chronicle tab, and hang
      * buttons off unrelated forms. */
     const hit = title
       ? CHRONICLE_HINT.test(title)
@@ -73,8 +73,8 @@
   }
 
   /* Only the entry form's own fields get a button. Wherever it is opened from,
-   * that form is an ExtJS window — the same thing Chronicle Anywhere looks for
-   * — so nothing outside one is ever scanned. Searching the Chronicle page at
+   * that form is an ExtJS window, the same thing Chronicle Anywhere looks for,
+   * so nothing outside one is ever scanned. Searching the Chronicle page at
    * large would put a Notes button on its search and filter boxes. */
   function chronicleContainers() {
     return Array.prototype.filter.call(
@@ -88,7 +88,7 @@
   /* ---------------- fields ---------------- */
 
   /* Only free-text fields qualify. Combo boxes, date pickers and spinners are
-   * inputs too, but a note has no business in one and the button would land on
+   * inputs too, but a snippet has no business in one and the button would land on
    * top of the trigger. */
   const TRIGGER_WRAP =
     ".x-form-trigger-wrap, .x-form-field-trigger-wrap, .x-trigger-wrap," +
@@ -121,7 +121,7 @@
       try {
         doc = el.contentDocument;
       } catch (e) {
-        return null; // cross-origin — not one of Compass's editors
+        return null; // cross-origin, so not one of Compass's editors
       }
       if (!doc || !doc.body) return null;
       const editable = doc.designMode === "on" || doc.body.isContentEditable;
@@ -178,12 +178,12 @@
     );
   }
 
-  /* A note with no field set is offered everywhere. Otherwise its field has to
+  /* A snippet with no field set is offered everywhere. Otherwise its field has to
    * appear somewhere in the label, so "details" finds both "Details" and
    * "Entry details" without anyone having to type the label exactly as Compass
    * renders it. */
-  function matches(note, label) {
-    const want = normalise(note.field);
+  function matches(snippet, label) {
+    const want = normalise(snippet.field);
     if (!want) return true;
     return !!label && label.indexOf(want) !== -1;
   }
@@ -240,7 +240,7 @@
     root = document.createElement("div");
     // Chronicle Anywhere hides everything behind the entry form; the marker is
     // how it knows to leave this layer alone.
-    root.setAttribute("data-ct-templates", "");
+    root.setAttribute("data-ct-snippets", "");
     root.style.cssText =
       "position:fixed; inset:0; z-index:2147483000; pointer-events:none;";
     document.body.appendChild(root);
@@ -252,14 +252,14 @@
     button.type = "button";
     // Named so it is recognisable in the form's markup, where it now sits
     // among Compass's own elements.
-    button.setAttribute("data-ct-note-button", "");
+    button.setAttribute("data-ct-snippet-button", "");
     button.style.cssText = BUTTON_STYLE;
-    button.title = "Insert a pre-written note";
+    button.title = "Insert a saved snippet";
     button.appendChild(CompassToolkitIcons.create("fileText", 11));
-    button.appendChild(document.createTextNode("Notes"));
+    button.appendChild(document.createTextNode("Snippets"));
     button.appendChild(CompassToolkitIcons.create("chevronDown", 10));
 
-    const entry = { field: field, anchor: field.anchor, button: button, notes: [] };
+    const entry = { field: field, anchor: field.anchor, button: button, snippets: [] };
 
     button.onmouseover = function () {
       button.style.opacity = "1";
@@ -376,7 +376,7 @@
 
   /* How much of the field can actually be seen. The button belongs inside the
    * entry form, so it is clipped to the window the field lives in and to every
-   * scrolling box between the two — an entry form taller than its dialog would
+   * scrolling box between the two. An entry form taller than its dialog would
    * otherwise scroll a field out of view and leave its button floating over the
    * page above the form. */
   function visibleRect(entry) {
@@ -441,7 +441,7 @@
   }
 
   /* Positioned against the wrapper's padding box, which is what an absolutely
-   * positioned child is laid out from — hence the border widths and, if the
+   * positioned child is laid out from, hence the border widths and, if the
    * wrapper happens to scroll, its scroll offsets. */
   function placeInline(entry) {
     const button = entry.button;
@@ -484,7 +484,7 @@
     const width = button.offsetWidth || 58;
     const height = button.offsetHeight || 18;
 
-    // Gone, collapsed, or scrolled out of the form — nothing to sit on.
+    // Gone, collapsed, or scrolled out of the form, so nothing to sit on.
     const visible = visibleRect(entry);
     if (
       !rect.width ||
@@ -518,7 +518,7 @@
 
   /* Scrolling only moves what the browser isn't already moving: an inline
    * button travels with its wrapper and must be left alone, or it would be
-   * repositioned a frame late — the wiggle this placement exists to avoid. */
+   * repositioned a frame late, the wiggle this placement exists to avoid. */
   function placeAll() {
     if (!root && !attached.size) return;
     const origin = root ? layerOrigin() : null;
@@ -556,7 +556,7 @@
       e.stopPropagation();
     });
 
-    entry.notes.forEach(function (note) {
+    entry.snippets.forEach(function (snippet) {
       const item = document.createElement("button");
       item.type = "button";
       item.style.cssText = `
@@ -573,11 +573,11 @@
       `;
 
       const title = document.createElement("div");
-      title.textContent = note.title;
+      title.textContent = snippet.title;
       title.style.cssText = "font-size:12.5px; font-weight:600;";
 
       const sub = document.createElement("div");
-      sub.textContent = preview(note.text);
+      sub.textContent = preview(snippet.text);
       sub.style.cssText =
         "margin-top:1px; font-size:11px; color:#6b7688;" +
         " overflow:hidden; text-overflow:ellipsis; white-space:nowrap;";
@@ -594,7 +594,7 @@
         e.preventDefault();
         e.stopPropagation();
         closeMenu();
-        insert(entry, note.text);
+        insert(entry, snippet.text);
       });
 
       menu.appendChild(item);
@@ -609,7 +609,7 @@
   }
 
   /* Below the button, right edges aligned, flipped above when there isn't room
-   * — the entry form can be a short pop-up with very little around it. */
+   * because the entry form can be a short pop-up with little around it. */
   function placeMenu(entry, origin) {
     if (!menu) return;
     const rect = entry.button.getBoundingClientRect();
@@ -797,7 +797,7 @@
         node.dispatchEvent(new Event("input", { bubbles: true }));
         node.dispatchEvent(new Event("change", { bubbles: true }));
       } catch (e) {
-        /* older event constructors — not worth a fallback */
+        /* older event constructors, not worth a fallback */
       }
     });
   }
@@ -805,7 +805,7 @@
   /* ---------------- sweeping ---------------- */
 
   function scan() {
-    if (!config.enabled || !templates.length || !document.body) {
+    if (!config.enabled || !snippets.length || !document.body) {
       if (attached.size) detachAll();
       return;
     }
@@ -828,11 +828,11 @@
         if (!field) return;
 
         const label = fieldLabel(el);
-        const notes = templates.filter(function (note) {
-          return matches(note, label);
+        const matching = snippets.filter(function (snippet) {
+          return matches(snippet, label);
         });
-        // No note claims this field, so no button belongs in it.
-        if (!notes.length) return;
+        // No snippet claims this field, so no button belongs in it.
+        if (!matching.length) return;
 
         seen.add(el);
         let entry = attached.get(el);
@@ -843,7 +843,7 @@
         entry.field = field; // a rich editor can be re-created under us
         entry.anchor = field.anchor;
         entry.container = container; // the form the button is kept inside
-        entry.notes = notes;
+        entry.snippets = matching;
         remount(entry);
         place(entry, origin);
       });
@@ -860,7 +860,7 @@
     try {
       scan();
     } catch (e) {
-      console.error("[Compass Toolkit] Chronicle Templates failed:", e);
+      console.error("[Compass Toolkit] Chronicle Snippets failed:", e);
     }
   }
 
@@ -886,7 +886,7 @@
 
   function apply() {
     CompassToolkit.whenReady(function () {
-      if (config.enabled && templates.length) start();
+      if (config.enabled && snippets.length) start();
       else stop();
     });
   }
@@ -901,9 +901,9 @@
 
   // Notes are stored under their own key, so they change independently of the
   // feature's own settings.
-  CompassToolkit.observeTemplates(function (list) {
-    templates = list;
-    // Buttons are attached per field against the notes that matched at the
+  CompassToolkit.observeSnippets(function (list) {
+    snippets = list;
+    // Buttons are attached per field against the snippets that matched at the
     // time; the simplest way to pick up an edit is to build them again.
     detachAll();
     apply();

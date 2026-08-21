@@ -199,7 +199,7 @@ function updateLayerNames(layerDataFromHTML) {
   console.log('[UPDATE LAYERS] ========== Starting Layer Name Update ==========');
   
   if (!layerDataFromHTML || !layerDataFromHTML.layers) {
-    console.log('[UPDATE LAYERS] No layer names captured — keeping colour labels');
+    console.log('[UPDATE LAYERS] No layer names captured, keeping colour labels');
     return;
   }
   
@@ -232,7 +232,7 @@ function updateLayerNames(layerDataFromHTML) {
     } else {
       // Normal: a calendar layer with no events in the captured term has no
       // colour to match against. Not a fault, so don't log it as one.
-      console.log(`  "${htmlLayer.name}" has no events in this term — skipped`);
+      console.log(`  "${htmlLayer.name}" has no events in this term, skipped`);
     }
   });
   

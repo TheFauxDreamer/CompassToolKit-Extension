@@ -1,4 +1,4 @@
-/* Compass Toolkit — shared settings layer.
+/* Compass Toolkit: shared settings layer.
  *
  * Loaded as a classic script by the content scripts, the popup and the
  * extension's own pages, so everything agrees on one schema and one storage
@@ -18,12 +18,12 @@ var CompassToolkit = (function () {
     "(STIMS)"
   ];
 
-  /* Pre-written chronicle notes, offered from a button inside the entry form.
-   * `field` scopes a note to one field: blank means it is offered in every
-   * field, which is how all of these ship, because the fields on a chronicle
-   * entry are configured per school and nothing here can guess their names.
-   * Square brackets mark the bits meant to be filled in. */
-  const DEFAULT_CHRONICLE_TEMPLATES = [
+  /* Pre-written wording, offered from a button inside the chronicle entry
+   * form. `field` scopes a snippet to one field: blank means it is offered in
+   * every field, which is how all of these ship, because the fields on a
+   * chronicle entry are configured per school and nothing here can guess their
+   * names. Square brackets mark the bits meant to be filled in. */
+  const DEFAULT_CHRONICLE_SNIPPETS = [
     {
       id: "injury-minor",
       title: "Minor injury",
@@ -201,14 +201,14 @@ var CompassToolkit = (function () {
       ]
     },
     {
-      key: "chronicleTemplates",
-      name: "Chronicle Templates",
+      key: "chronicleSnippets",
+      name: "Chronicle Snippets",
       version: "1.0",
       icon: "fileText",
       description:
-        "Pre-written chronicle notes, offered from a button inside the entry form.",
+        "Pre-written wording, offered from a button inside the chronicle entry form.",
       where: "Chronicle entry form, wherever it opens",
-      custom: "chronicleTemplates",
+      custom: "chronicleSnippets",
       settings: [
         {
           key: "placement",
@@ -225,9 +225,9 @@ var CompassToolkit = (function () {
         {
           key: "insertMode",
           type: "select",
-          label: "Insert a note",
+          label: "Insert a snippet",
           description:
-            "Where the note goes when the field already has something in it.",
+            "Where the text goes when the field already has something in it.",
           options: [
             { value: "cursor", label: "At the cursor" },
             { value: "append", label: "At the end" },
@@ -407,30 +407,30 @@ var CompassToolkit = (function () {
     });
   }
 
-  /* ---------------- chronicle notes ---------------- */
+  /* ---------------- chronicle snippets ---------------- */
 
-  /* Notes live under their own sync key rather than inside the settings blob.
-   * chrome.storage.sync caps a single item at 8KB, and a note body is far
-   * larger than anything else stored here: keeping them apart means a long
+  /* Snippets live under their own sync key rather than inside the settings
+   * blob. chrome.storage.sync caps a single item at 8KB, and a snippet body is
+   * far larger than anything else stored here: keeping them apart means a long
    * list can't push the rest of the settings over the limit, and a rejected
    * write can be reported on its own rather than failing silently. */
-  const TEMPLATES_KEY = "chronicle.templates";
+  const SNIPPETS_KEY = "chronicle.snippets";
 
-  function defaultTemplates() {
-    return DEFAULT_CHRONICLE_TEMPLATES.map(function (note) {
+  function defaultSnippets() {
+    return DEFAULT_CHRONICLE_SNIPPETS.map(function (snippet) {
       return {
-        id: note.id,
-        title: note.title,
-        field: note.field,
-        text: note.text
+        id: snippet.id,
+        title: snippet.title,
+        field: snippet.field,
+        text: snippet.text
       };
     });
   }
 
-  /* Stored notes are treated as untrusted — they may have been written by an
-   * older version, or by a sync partner running one. Anything without both a
-   * title and a body is dropped rather than shown as a blank row. */
-  function cleanTemplates(list) {
+  /* Stored snippets are treated as untrusted, since they may have been written
+   * by an older version or by a sync partner running one. Anything without both
+   * a title and a body is dropped rather than shown as a blank row. */
+  function cleanSnippets(list) {
     if (!Array.isArray(list)) return null;
     const out = [];
     list.forEach(function (item, index) {
@@ -439,7 +439,7 @@ var CompassToolkit = (function () {
       const text = String(item.text == null ? "" : item.text);
       if (!title || !text.trim()) return;
       out.push({
-        id: String(item.id || "note-" + index),
+        id: String(item.id || "snippet-" + index),
         title: title,
         field: String(item.field == null ? "" : item.field).trim(),
         text: text
@@ -448,38 +448,80 @@ var CompassToolkit = (function () {
     return out;
   }
 
-  function getTemplates() {
+  /* v1.1.0 shipped these under "chronicle.templates", before the feature was
+   * renamed away from wording Compass already uses. Anything written under the
+   * old key is adopted once and the old key dropped, so a snippet edited on
+   * that version is not silently replaced by the built-in set. Safe to delete
+   * this, and the call below, once no install is on v1.1.0. */
+  const LEGACY_SNIPPETS_KEY = "chronicle.templates";
+
+  function adoptLegacySnippets() {
     return new Promise(function (resolve) {
       try {
-        chrome.storage.sync.get([TEMPLATES_KEY], function (result) {
-          if (consumeLastError("reading chronicle notes")) {
-            resolve(defaultTemplates());
+        chrome.storage.sync.get([LEGACY_SNIPPETS_KEY], function (result) {
+          if (consumeLastError("reading the old snippets key")) {
+            resolve(null);
             return;
           }
-          /* Nothing stored means a first run, so the built-in notes are the
-           * answer. An empty list means every note was deleted on purpose,
-           * which has to survive a reload. */
-          const clean = cleanTemplates(result[TEMPLATES_KEY]);
-          resolve(clean || defaultTemplates());
+          const clean = cleanSnippets(result[LEGACY_SNIPPETS_KEY]);
+          if (!clean) {
+            resolve(null);
+            return;
+          }
+          const payload = {};
+          payload[SNIPPETS_KEY] = clean;
+          chrome.storage.sync.set(payload, function () {
+            consumeLastError("moving snippets to the new key");
+            chrome.storage.sync.remove(LEGACY_SNIPPETS_KEY, function () {
+              consumeLastError("dropping the old snippets key");
+              resolve(clean);
+            });
+          });
         });
       } catch (e) {
-        resolve(defaultTemplates());
+        resolve(null);
+      }
+    });
+  }
+
+  function getSnippets() {
+    return new Promise(function (resolve) {
+      try {
+        chrome.storage.sync.get([SNIPPETS_KEY], function (result) {
+          if (consumeLastError("reading chronicle snippets")) {
+            resolve(defaultSnippets());
+            return;
+          }
+          /* Nothing stored means a first run, so the built-in snippets are
+           * the answer. An empty list means every one was deleted on purpose,
+           * which has to survive a reload. */
+          const clean = cleanSnippets(result[SNIPPETS_KEY]);
+          if (clean) {
+            resolve(clean);
+            return;
+          }
+          adoptLegacySnippets().then(function (moved) {
+            resolve(moved || defaultSnippets());
+          });
+        });
+      } catch (e) {
+        resolve(defaultSnippets());
       }
     });
   }
 
   /* Resolves { ok, error } rather than throwing: the popup shows the message
    * so a list that has outgrown the sync quota doesn't fail invisibly. */
-  function saveTemplates(list) {
+  function saveSnippets(list) {
     return new Promise(function (resolve) {
       const payload = {};
-      payload[TEMPLATES_KEY] = cleanTemplates(list) || [];
+      payload[SNIPPETS_KEY] = cleanSnippets(list) || [];
       try {
         chrome.storage.sync.set(payload, function () {
           const err = chrome.runtime.lastError;
           if (err) {
             console.log(
-              "[Compass Toolkit] saving chronicle notes: " + err.message
+              "[Compass Toolkit] saving chronicle snippets: " + err.message
             );
             resolve({ ok: false, error: err.message });
             return;
@@ -492,9 +534,9 @@ var CompassToolkit = (function () {
     });
   }
 
-  /* The notes equivalent of observeFeature — they are stored separately, so
+  /* The snippets equivalent of observeFeature. They are stored separately, so
    * changes to them arrive on their own key. */
-  function observeTemplates(handler) {
+  function observeSnippets(handler) {
     let current = null;
 
     function deliver(list) {
@@ -503,24 +545,24 @@ var CompassToolkit = (function () {
       try {
         handler(list);
       } catch (e) {
-        console.error("[Compass Toolkit] chronicle notes failed:", e);
+        console.error("[Compass Toolkit] chronicle snippets failed:", e);
       }
     }
 
-    getTemplates().then(deliver);
+    getSnippets().then(deliver);
 
     chrome.storage.onChanged.addListener(function (changes, area) {
-      if (area !== "sync" || !changes[TEMPLATES_KEY]) return;
-      // A removed key means the notes were reset, not that there are none.
+      if (area !== "sync" || !changes[SNIPPETS_KEY]) return;
+      // A removed key means the snippets were reset, not that there are none.
       deliver(
-        cleanTemplates(changes[TEMPLATES_KEY].newValue) || defaultTemplates()
+        cleanSnippets(changes[SNIPPETS_KEY].newValue) || defaultSnippets()
       );
     });
   }
 
-  function newTemplateId() {
+  function newSnippetId() {
     return (
-      "note-" +
+      "snippet-" +
       Date.now().toString(36) +
       Math.random().toString(36).slice(2, 6)
     );
@@ -563,7 +605,7 @@ var CompassToolkit = (function () {
     }
   })();
 
-  /* Runs `fn` once the document body exists — content scripts start at
+  /* Runs `fn` once the document body exists. Content scripts start at
    * document_start, before there is anything to touch. */
   function whenReady(fn) {
     if (document.body) {
@@ -589,12 +631,12 @@ var CompassToolkit = (function () {
     getSettings: getSettings,
     saveSettings: saveSettings,
     observeFeature: observeFeature,
-    TEMPLATES_KEY: TEMPLATES_KEY,
-    defaultTemplates: defaultTemplates,
-    getTemplates: getTemplates,
-    saveTemplates: saveTemplates,
-    observeTemplates: observeTemplates,
-    newTemplateId: newTemplateId,
+    SNIPPETS_KEY: SNIPPETS_KEY,
+    defaultSnippets: defaultSnippets,
+    getSnippets: getSnippets,
+    saveSnippets: saveSnippets,
+    observeSnippets: observeSnippets,
+    newSnippetId: newSnippetId,
     getData: getData,
     setData: setData,
     isTopFrame: isTopFrame,
