@@ -10,6 +10,7 @@
   const CALENDAR_PAGE = "pages/calendar.html";
 
   let settings = null;
+  let templates = []; // chronicle notes — stored under their own key
   const listEl = document.getElementById("features");
   const summaryEl = document.getElementById("summary");
 
@@ -228,6 +229,257 @@
     return wrap;
   }
 
+  /* ---------------- chronicle notes panel ---------------- */
+
+  /* An editor for the pre-written notes. The panel swaps between a list of
+   * what's there and a form for one note, rather than editing in place: at
+   * 380px wide there is no room to show both. */
+  function buildTemplatesPanel() {
+    const wrap = el("div", "sub-setting");
+    wrap.appendChild(el("div", "sub-label", "Pre-written notes"));
+    wrap.appendChild(
+      el(
+        "div",
+        "sub-desc",
+        "Offered from a Notes button inside the chronicle entry form. Give a note a field to show it only there; leave the field blank and it shows in every chronicle field."
+      )
+    );
+
+    const body = el("div", "note-body");
+    const status = el("div", "status");
+    status.hidden = true;
+    wrap.appendChild(body);
+    wrap.appendChild(status);
+
+    function setStatus(message, kind) {
+      status.hidden = !message;
+      if (!message) return;
+      status.className = "status" + (kind ? " " + kind : "");
+      status.innerHTML = "";
+      status.appendChild(
+        CompassToolkitIcons.create(kind === "error" ? "alert" : "check", 13)
+      );
+      status.appendChild(el("span", null, message));
+    }
+
+    /* Sync rejects an item over 8KB, which a long enough list of notes can
+     * reach. Saying so beats a note quietly vanishing on the next reload. */
+    function explain(error) {
+      if (/quota/i.test(error || "")) {
+        return "There is too much text here for Chrome to sync. Shorten or delete a note and try again.";
+      }
+      return error || "Chrome refused the change.";
+    }
+
+    // The list is only replaced once the write succeeds, so what is on screen
+    // always matches what is stored.
+    function persist(next, onSaved) {
+      const previous = templates;
+      templates = next;
+      CompassToolkit.saveTemplates(next).then(function (result) {
+        if (!result.ok) {
+          templates = previous;
+          renderList();
+          setStatus("Not saved. " + explain(result.error), "error");
+          return;
+        }
+        setStatus(null);
+        if (onSaved) onSaved();
+        else renderList();
+      });
+    }
+
+    function actionButton(iconName, label) {
+      const button = el("button", "icon-btn");
+      button.type = "button";
+      button.title = label;
+      button.setAttribute("aria-label", label);
+      button.appendChild(CompassToolkitIcons.create(iconName, 13));
+      return button;
+    }
+
+    function renderList() {
+      body.innerHTML = "";
+      const list = el("div", "note-list");
+
+      if (!templates.length) {
+        list.appendChild(
+          el(
+            "div",
+            "empty-note",
+            "No notes — the button won't appear until you add one."
+          )
+        );
+      }
+
+      templates.forEach(function (note, index) {
+        const row = el("div", "note");
+
+        const head = el("div", "note-head");
+        head.appendChild(el("span", "note-title", note.title));
+        const scope = el(
+          "span",
+          "note-scope" + (note.field ? "" : " all"),
+          note.field || "All fields"
+        );
+        scope.title = note.field
+          ? 'Only fields whose label contains "' + note.field + '"'
+          : "Offered in every chronicle field";
+        head.appendChild(scope);
+
+        const actions = el("div", "note-actions");
+        const edit = actionButton("note", "Edit " + note.title);
+        edit.addEventListener("click", function () {
+          renderEditor(note);
+        });
+
+        const remove = actionButton("trash", "Delete " + note.title);
+        let armed = null;
+        remove.addEventListener("click", function () {
+          // Two-step, like resetting: there is no undo once it is gone.
+          if (!armed) {
+            remove.classList.add("armed");
+            remove.appendChild(el("span", null, "Delete?"));
+            armed = setTimeout(function () {
+              armed = null;
+              remove.classList.remove("armed");
+              remove.innerHTML = "";
+              remove.appendChild(CompassToolkitIcons.create("trash", 13));
+            }, 4000);
+            return;
+          }
+          clearTimeout(armed);
+          const next = templates.slice();
+          next.splice(index, 1);
+          persist(next);
+        });
+
+        actions.appendChild(edit);
+        actions.appendChild(remove);
+        head.appendChild(actions);
+
+        row.appendChild(head);
+        row.appendChild(el("div", "note-preview", note.text));
+        list.appendChild(row);
+      });
+
+      body.appendChild(list);
+
+      const add = iconButton("btn block", "plus", "Add a note");
+      add.addEventListener("click", function () {
+        renderEditor(null);
+      });
+      body.appendChild(add);
+
+      // Offered only while something built-in is actually missing, and it adds
+      // rather than replaces, so edited notes are left alone.
+      const missing = CompassToolkit.defaultTemplates().filter(function (note) {
+        return !templates.some(function (existing) {
+          return existing.id === note.id;
+        });
+      });
+      if (missing.length) {
+        const restore = el(
+          "button",
+          "link-btn note-restore",
+          "Add the " + missing.length + " missing built-in notes"
+        );
+        restore.type = "button";
+        restore.addEventListener("click", function () {
+          persist(templates.concat(missing));
+        });
+        body.appendChild(restore);
+      }
+    }
+
+    function renderEditor(note) {
+      body.innerHTML = "";
+      setStatus(null);
+
+      const form = el("div", "note-form");
+
+      function labelled(text, control, hint) {
+        form.appendChild(el("label", "field-label", text));
+        form.appendChild(control);
+        if (hint) form.appendChild(el("div", "sub-desc", hint));
+      }
+
+      const title = document.createElement("input");
+      title.type = "text";
+      title.placeholder = "e.g. Minor injury";
+      title.value = note ? note.title : "";
+      labelled("Name", title);
+
+      const field = document.createElement("input");
+      field.type = "text";
+      field.placeholder = "Leave blank for every field";
+      field.value = note ? note.field : "";
+      labelled(
+        "Chronicle field",
+        field,
+        "Matched against the field's label in the entry form — part of the label is enough."
+      );
+
+      const text = document.createElement("textarea");
+      text.rows = 6;
+      text.placeholder = "The note to insert…";
+      text.value = note ? note.text : "";
+      labelled("Note", text);
+
+      const buttons = el("div", "row-btns");
+      const save = el("button", "btn", note ? "Save changes" : "Add note");
+      save.type = "button";
+      const cancel = el("button", "btn secondary", "Cancel");
+      cancel.type = "button";
+
+      save.addEventListener("click", function () {
+        const values = {
+          title: title.value.trim(),
+          field: field.value.trim(),
+          text: text.value
+        };
+        if (!values.title || !values.text.trim()) {
+          setStatus("A note needs a name and some text.", "error");
+          return;
+        }
+
+        const next = templates.slice();
+        if (note) {
+          const index = next.findIndex(function (item) {
+            return item.id === note.id;
+          });
+          if (index !== -1) {
+            next[index] = {
+              id: note.id,
+              title: values.title,
+              field: values.field,
+              text: values.text
+            };
+          }
+        } else {
+          next.push({
+            id: CompassToolkit.newTemplateId(),
+            title: values.title,
+            field: values.field,
+            text: values.text
+          });
+        }
+        persist(next);
+      });
+
+      cancel.addEventListener("click", renderList);
+
+      buttons.appendChild(save);
+      buttons.appendChild(cancel);
+      form.appendChild(buttons);
+      body.appendChild(form);
+      title.focus();
+    }
+
+    renderList();
+    return wrap;
+  }
+
   /* ---------------- calendar panel ---------------- */
 
   function buildCalendarPanel() {
@@ -420,6 +672,10 @@
       panel.appendChild(buildCalendarPanel());
     }
 
+    if (feature.custom === "chronicleTemplates") {
+      panel.appendChild(buildTemplatesPanel());
+    }
+
     return panel;
   }
 
@@ -525,14 +781,19 @@
     resetArmed = false;
     resetBtn.textContent = "Reset to defaults";
     settings = CompassToolkit.defaults();
-    save().then(render);
+    templates = CompassToolkit.defaultTemplates();
+    Promise.all([save(), CompassToolkit.saveTemplates(templates)]).then(render);
   });
 
   const manifest = chrome.runtime.getManifest();
   document.getElementById("version").textContent = "v" + manifest.version;
 
-  CompassToolkit.getSettings().then(function (loaded) {
-    settings = loaded;
+  Promise.all([
+    CompassToolkit.getSettings(),
+    CompassToolkit.getTemplates()
+  ]).then(function (loaded) {
+    settings = loaded[0];
+    templates = loaded[1];
     render();
   });
 })();

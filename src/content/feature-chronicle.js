@@ -605,6 +605,10 @@
       if (/x-mask|x-shadow|x-tip|x-menu|x-layer/.test(child.className || "")) {
         return;
       }
+      /* Chronicle Templates parks its in-field buttons in a fixed layer of its
+       * own, outside the dialog. Hiding it would take the buttons off the very
+       * form this modal exists to show. */
+      if (child.hasAttribute && child.hasAttribute("data-ct-templates")) return;
       child.style.display = "none";
     });
 

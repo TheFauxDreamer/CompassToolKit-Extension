@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Eight Compass improvements in one extension. Each can be turned on or off from
+Nine Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -69,6 +69,38 @@ The button slides along the edge to sit beside anything already in that corner,
 such as the Compass help bubble or this toolkit's own timetable buttons, and it
 doesn't appear when you're already on the Chronicle page. With **Hide Support
 Button** on there's no bubble to avoid, so it sits flush in the corner.
+
+## Chronicle Templates
+
+The same chronicle entries get written over and over, so this offers
+pre-written notes from a small **Notes** button inside the entry form's own
+fields. Pick one and its text drops into that field; Compass saves the entry
+exactly as if you'd typed it.
+
+It comes with eight to start from — minor injury, head knock, sick bay, late to
+class, out of uniform, mobile phone, positive recognition and contacted home —
+each with `[square brackets]` marking the bits to fill in. Edit them, delete the
+ones you don't want, and add your own from the menu.
+
+A note can name a **chronicle field**. When it does, its button only appears in
+fields whose label contains that name, so an injury note can sit in the injury
+field and nowhere else. Part of the label is enough: `details` finds both
+"Details" and "Entry details". Leave the field blank and the note is offered in
+every field of the entry form, which is how the built-in ones ship — the fields
+on a chronicle entry are set up per school, so the extension can't guess their
+names.
+
+- **Insert a note** — where the text goes when the field already has something
+  in it: at the cursor, at the end, or replacing what's there.
+
+The button appears wherever the entry form opens: the Chronicle page, a
+student's profile, or inside the Chronicle Anywhere pop-up. Fields that aren't
+free text — the type dropdown, date pickers — are left alone, and a field no
+note matches doesn't get a button at all.
+
+Notes are synced with your Chrome profile, so they follow you between machines.
+Chrome caps how much can be synced; if you ever hit it, the menu says so rather
+than losing the note.
 
 ## Clean Staff Directory
 

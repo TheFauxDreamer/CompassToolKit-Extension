@@ -467,6 +467,151 @@ input[type="text"]:focus {
   color: var(--accent);
 }
 
+/* ---------------- chronicle notes ---------------- */
+
+.note-list {
+  margin: 9px 0 0;
+}
+
+.note {
+  padding: 7px 8px;
+  margin-bottom: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.note-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.note-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Which field the note is tied to, or that it is offered in all of them. */
+.note-scope {
+  flex-shrink: 0;
+  max-width: 110px;
+  padding: 1px 6px;
+  font-size: 10px;
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+  border-radius: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.note-scope.all {
+  color: var(--text-muted);
+  background: var(--bg-sunken);
+}
+
+.note-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  background: var(--bg-sunken);
+  color: var(--text);
+}
+
+/* Armed for deletion — one more click and the note is gone. */
+.icon-btn.armed,
+.icon-btn.armed:hover {
+  padding: 3px 6px;
+  color: #fff;
+  background: var(--danger);
+}
+
+.note-preview {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-muted);
+  /* Two lines is enough to recognise a note without the list running away. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.note-restore {
+  display: block;
+  margin-top: 8px;
+}
+
+.note-form {
+  margin-top: 9px;
+}
+
+.field-label {
+  display: block;
+  margin: 8px 0 3px;
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.note-form input[type="text"],
+.note-form textarea {
+  display: block;
+  width: 100%;
+}
+
+textarea {
+  min-width: 0;
+  padding: 6px 9px;
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.row-btns {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.row-btns .btn {
+  flex: 1;
+}
+
 /* ---------------- calendar panel ---------------- */
 
 .steps {

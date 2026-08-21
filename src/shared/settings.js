@@ -18,6 +18,86 @@ var CompassToolkit = (function () {
     "(STIMS)"
   ];
 
+  /* Pre-written chronicle notes, offered from a button inside the entry form.
+   * `field` scopes a note to one field: blank means it is offered in every
+   * field, which is how all of these ship, because the fields on a chronicle
+   * entry are configured per school and nothing here can guess their names.
+   * Square brackets mark the bits meant to be filled in. */
+  const DEFAULT_CHRONICLE_TEMPLATES = [
+    {
+      id: "injury-minor",
+      title: "Minor injury",
+      field: "",
+      text:
+        "Minor injury to [body part], sustained during [activity].\n" +
+        "First aid given by [staff member]. Student was comfortable and " +
+        "returned to class.\nParent/guardian notified: [yes/no]."
+    },
+    {
+      id: "injury-head",
+      title: "Head knock",
+      field: "",
+      text:
+        "Student received a knock to the head during [activity].\n" +
+        "Checked by [staff member]; no symptoms of concern observed. Ice pack " +
+        "applied and the student was monitored in [location].\n" +
+        "Parent/guardian contacted and advised of the school's head injury " +
+        "procedure."
+    },
+    {
+      id: "sick-bay",
+      title: "Sent to sick bay",
+      field: "",
+      text:
+        "Student reported feeling unwell ([symptoms]) during [class] and was " +
+        "sent to sick bay.\nOutcome: [rested and returned to class / " +
+        "collected by parent/guardian]."
+    },
+    {
+      id: "late-to-class",
+      title: "Late to class",
+      field: "",
+      text:
+        "Arrived [number] minutes late to [class] without a note or " +
+        "explanation.\nPunctuality expectation restated. This is the " +
+        "[first/second/further] instance this term."
+    },
+    {
+      id: "out-of-uniform",
+      title: "Out of uniform",
+      field: "",
+      text:
+        "Out of uniform: [item]. No uniform pass presented.\n" +
+        "Student was reminded of the uniform expectation and [action taken]."
+    },
+    {
+      id: "mobile-phone",
+      title: "Mobile phone",
+      field: "",
+      text:
+        "Using a mobile phone during [class] after being asked to put it " +
+        "away.\nPhone handed in and collected from [location] at the end of " +
+        "[period/day]. Expectation restated."
+    },
+    {
+      id: "positive",
+      title: "Positive recognition",
+      field: "",
+      text:
+        "Recognising consistent [effort/attitude/improvement] in [class]: " +
+        "[what they did].\nShared with [parent/guardian / year coordinator]."
+    },
+    {
+      id: "contacted-home",
+      title: "Contacted home",
+      field: "",
+      text:
+        "Phone call to [parent/guardian] regarding [reason].\n" +
+        "Discussed: [summary]. Agreed next steps: [actions].\n" +
+        "Call was [answered / left a message / no answer]."
+    }
+  ];
+
   /* The single source of truth: each feature, its sub-settings, and the
    * labels the popup renders. `default` on a sub-setting also defines the
    * value features fall back to when nothing is stored. */
@@ -117,6 +197,43 @@ var CompassToolkit = (function () {
           description:
             "Close the pop-up automatically once the entry is saved or cancelled.",
           default: true
+        }
+      ]
+    },
+    {
+      key: "chronicleTemplates",
+      name: "Chronicle Templates",
+      version: "1.0",
+      icon: "fileText",
+      description:
+        "Pre-written chronicle notes, offered from a button inside the entry form.",
+      where: "Chronicle entry form, wherever it opens",
+      custom: "chronicleTemplates",
+      settings: [
+        {
+          key: "placement",
+          type: "select",
+          label: "Button placement",
+          description:
+            "The button is put inside the field itself. If that breaks the chronicle layout, set it to float over the field instead.",
+          options: [
+            { value: "inline", label: "In the field" },
+            { value: "float", label: "Floating" }
+          ],
+          default: "inline"
+        },
+        {
+          key: "insertMode",
+          type: "select",
+          label: "Insert a note",
+          description:
+            "Where the note goes when the field already has something in it.",
+          options: [
+            { value: "cursor", label: "At the cursor" },
+            { value: "append", label: "At the end" },
+            { value: "replace", label: "Replace it" }
+          ],
+          default: "cursor"
         }
       ]
     },
@@ -290,6 +407,125 @@ var CompassToolkit = (function () {
     });
   }
 
+  /* ---------------- chronicle notes ---------------- */
+
+  /* Notes live under their own sync key rather than inside the settings blob.
+   * chrome.storage.sync caps a single item at 8KB, and a note body is far
+   * larger than anything else stored here: keeping them apart means a long
+   * list can't push the rest of the settings over the limit, and a rejected
+   * write can be reported on its own rather than failing silently. */
+  const TEMPLATES_KEY = "chronicle.templates";
+
+  function defaultTemplates() {
+    return DEFAULT_CHRONICLE_TEMPLATES.map(function (note) {
+      return {
+        id: note.id,
+        title: note.title,
+        field: note.field,
+        text: note.text
+      };
+    });
+  }
+
+  /* Stored notes are treated as untrusted — they may have been written by an
+   * older version, or by a sync partner running one. Anything without both a
+   * title and a body is dropped rather than shown as a blank row. */
+  function cleanTemplates(list) {
+    if (!Array.isArray(list)) return null;
+    const out = [];
+    list.forEach(function (item, index) {
+      if (!item || typeof item !== "object") return;
+      const title = String(item.title == null ? "" : item.title).trim();
+      const text = String(item.text == null ? "" : item.text);
+      if (!title || !text.trim()) return;
+      out.push({
+        id: String(item.id || "note-" + index),
+        title: title,
+        field: String(item.field == null ? "" : item.field).trim(),
+        text: text
+      });
+    });
+    return out;
+  }
+
+  function getTemplates() {
+    return new Promise(function (resolve) {
+      try {
+        chrome.storage.sync.get([TEMPLATES_KEY], function (result) {
+          if (consumeLastError("reading chronicle notes")) {
+            resolve(defaultTemplates());
+            return;
+          }
+          /* Nothing stored means a first run, so the built-in notes are the
+           * answer. An empty list means every note was deleted on purpose,
+           * which has to survive a reload. */
+          const clean = cleanTemplates(result[TEMPLATES_KEY]);
+          resolve(clean || defaultTemplates());
+        });
+      } catch (e) {
+        resolve(defaultTemplates());
+      }
+    });
+  }
+
+  /* Resolves { ok, error } rather than throwing: the popup shows the message
+   * so a list that has outgrown the sync quota doesn't fail invisibly. */
+  function saveTemplates(list) {
+    return new Promise(function (resolve) {
+      const payload = {};
+      payload[TEMPLATES_KEY] = cleanTemplates(list) || [];
+      try {
+        chrome.storage.sync.set(payload, function () {
+          const err = chrome.runtime.lastError;
+          if (err) {
+            console.log(
+              "[Compass Toolkit] saving chronicle notes: " + err.message
+            );
+            resolve({ ok: false, error: err.message });
+            return;
+          }
+          resolve({ ok: true });
+        });
+      } catch (e) {
+        resolve({ ok: false, error: String((e && e.message) || e) });
+      }
+    });
+  }
+
+  /* The notes equivalent of observeFeature — they are stored separately, so
+   * changes to them arrive on their own key. */
+  function observeTemplates(handler) {
+    let current = null;
+
+    function deliver(list) {
+      if (current && JSON.stringify(current) === JSON.stringify(list)) return;
+      current = list;
+      try {
+        handler(list);
+      } catch (e) {
+        console.error("[Compass Toolkit] chronicle notes failed:", e);
+      }
+    }
+
+    getTemplates().then(deliver);
+
+    chrome.storage.onChanged.addListener(function (changes, area) {
+      if (area !== "sync" || !changes[TEMPLATES_KEY]) return;
+      // A removed key means the notes were reset, not that there are none.
+      deliver(
+        cleanTemplates(changes[TEMPLATES_KEY].newValue) || defaultTemplates()
+      );
+    });
+  }
+
+  function newTemplateId() {
+    return (
+      "note-" +
+      Date.now().toString(36) +
+      Math.random().toString(36).slice(2, 6)
+    );
+  }
+
   /* Keys used for data captured off Compass pages (chrome.storage.local). */
   const DATA_KEYS = {
     periods: "capture.periodsData",
@@ -353,6 +589,12 @@ var CompassToolkit = (function () {
     getSettings: getSettings,
     saveSettings: saveSettings,
     observeFeature: observeFeature,
+    TEMPLATES_KEY: TEMPLATES_KEY,
+    defaultTemplates: defaultTemplates,
+    getTemplates: getTemplates,
+    saveTemplates: saveTemplates,
+    observeTemplates: observeTemplates,
+    newTemplateId: newTemplateId,
     getData: getData,
     setData: setData,
     isTopFrame: isTopFrame,
