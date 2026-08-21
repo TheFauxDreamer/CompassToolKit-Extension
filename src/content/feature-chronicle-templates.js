@@ -12,10 +12,16 @@
  * which is how the built-in ones ship: the fields on a chronicle entry are
  * configured per school, so nothing here can guess their names.
  *
- * The buttons live in a fixed layer of their own, pinned over each field rather
- * than inserted into it. ExtJS measures and re-lays-out its own markup, so
- * putting anything inside a form item invites a fight; sitting on top of one
- * costs a periodic reposition and touches nothing Compass owns.
+ * A button is put inside the field's own wrapper, positioned absolutely so it
+ * is out of the flow: ExtJS measures and lays out its own markup, and an
+ * out-of-flow child changes none of those measurements. The wrapper scrolls,
+ * and the button goes with it, drawn by the browser rather than chased from
+ * JavaScript.
+ *
+ * The fallback is a fixed layer that floats over the field instead, touching
+ * nothing Compass owns. It costs a reposition on every scroll — which is a
+ * frame behind the content, and looks it — so it is the setting to reach for
+ * only if putting the button in the form upsets a school's layout.
  *
  * This runs in every frame, not just the top one, so the buttons appear in the
  * entry form whether it was opened from the Chronicle page, from a student
@@ -31,7 +37,7 @@
     'textarea, input, iframe, [contenteditable="true"],' +
     ' [contenteditable="plaintext-only"]';
 
-  let config = { enabled: false, insertMode: "cursor" };
+  let config = { enabled: false, insertMode: "cursor", placement: "inline" };
   let templates = [];
   let root = null; // the fixed layer holding every button
   let menu = null; // the open dropdown, if any
@@ -184,13 +190,25 @@
 
   /* ---------------- the button layer ---------------- */
 
+  /* Explicit about everything that matters: inside the form the button is in
+   * reach of Compass's own stylesheets, and a rule meant for ExtJS buttons
+   * should not get to reshape it. */
   const BUTTON_STYLE = `
     position: absolute;
+    z-index: 5;
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     gap: 3px;
+    width: auto;
+    height: auto;
+    min-width: 0;
     margin: 0;
     padding: 2px 5px;
+    white-space: nowrap;
+    text-transform: none;
+    text-decoration: none;
+    float: none;
     color: #fff;
     background: #6a1b9a;
     border: none;
@@ -232,6 +250,9 @@
   function attach(field) {
     const button = document.createElement("button");
     button.type = "button";
+    // Named so it is recognisable in the form's markup, where it now sits
+    // among Compass's own elements.
+    button.setAttribute("data-ct-note-button", "");
     button.style.cssText = BUTTON_STYLE;
     button.title = "Insert a pre-written note";
     button.appendChild(CompassToolkitIcons.create("fileText", 11));
@@ -261,8 +282,45 @@
       else openMenu(entry);
     });
 
-    ensureRoot().appendChild(button);
+    mount(entry);
     return entry;
+  }
+
+  const inlinePlacement = () => (config.placement || "inline") !== "float";
+
+  /* Inline, the button belongs to the field's own wrapper so that scrolling
+   * moves it without anything being recalculated. Floating, it goes in the
+   * shared layer. A wrapper-less field (nothing but the body above it) falls
+   * back to floating rather than being left without a button. */
+  function mount(entry) {
+    const host = inlinePlacement() ? hostFor(entry.anchor) : null;
+    if (host) host.appendChild(entry.button);
+    else ensureRoot().appendChild(entry.button);
+    entry.host = host;
+  }
+
+  function hostFor(anchor) {
+    const parent = anchor.parentElement;
+    if (!parent || parent === document.body) return null;
+    return parent;
+  }
+
+  /* ExtJS re-renders a form item and takes the button with it, and switching
+   * placement moves every button at once. Both show up as the button no longer
+   * being where it belongs. */
+  function remount(entry) {
+    const wanted = inlinePlacement() ? hostFor(entry.anchor) : null;
+    if (entry.host === wanted && entry.button.isConnected) return;
+    if (entry.host !== wanted) release(entry.host);
+    mount(entry);
+  }
+
+  /* The wrapper only ever lent the button a positioning context; give it back
+   * so nothing is left behind on a form Compass still owns. */
+  function release(host) {
+    if (!host || host.dataset.ctAnchored !== "1") return;
+    delete host.dataset.ctAnchored;
+    host.style.position = "";
   }
 
   function detach(el) {
@@ -270,10 +328,12 @@
     if (!entry) return;
     if (menuOwner === entry) closeMenu();
     entry.button.remove();
+    release(entry.host);
     attached.delete(el);
   }
 
   function detachAll() {
+    // detach() releases each wrapper as it goes.
     Array.from(attached.keys()).forEach(detach);
     closeMenu();
     if (root) {
@@ -357,6 +417,68 @@
   }
 
   function place(entry, origin) {
+    if (entry.host) placeInline(entry);
+    else placeFloating(entry, origin);
+  }
+
+  /* Where the button sits within the field, in the field's own box. Both
+   * placements want the same spot; they differ only in what they measure it
+   * against. */
+  function offsetInField(rect, width, height, bar) {
+    return {
+      left: Math.max(0, rect.width - width - INSET - bar),
+      // Single-line fields have no room above the text, so the button centres
+      // on the right-hand end instead of tucking into the corner.
+      top:
+        rect.height < height + INSET * 2 + 6
+          ? (rect.height - height) / 2
+          : INSET
+    };
+  }
+
+  function scrollbarWidth(anchor) {
+    return Math.max(0, (anchor.offsetWidth || 0) - (anchor.clientWidth || 0));
+  }
+
+  /* Positioned against the wrapper's padding box, which is what an absolutely
+   * positioned child is laid out from — hence the border widths and, if the
+   * wrapper happens to scroll, its scroll offsets. */
+  function placeInline(entry) {
+    const button = entry.button;
+    const host = entry.host;
+    const rect = entry.anchor.getBoundingClientRect();
+
+    if (!rect.width || !rect.height) {
+      button.style.display = "none";
+      return;
+    }
+    button.style.display = "inline-flex";
+
+    // The one thing the wrapper has to provide. Re-checked every pass so a
+    // re-render, or another field letting go of the same wrapper, heals.
+    if (getComputedStyle(host).position === "static") {
+      host.style.position = "relative";
+      host.dataset.ctAnchored = "1";
+    }
+
+    const hostRect = host.getBoundingClientRect();
+    const spot = offsetInField(
+      rect,
+      button.offsetWidth || 58,
+      button.offsetHeight || 18,
+      scrollbarWidth(entry.anchor)
+    );
+
+    const left =
+      rect.left - hostRect.left - host.clientLeft + host.scrollLeft + spot.left;
+    const top =
+      rect.top - hostRect.top - host.clientTop + host.scrollTop + spot.top;
+
+    button.style.left = Math.round(left) + "px";
+    button.style.top = Math.round(top) + "px";
+  }
+
+  function placeFloating(entry, origin) {
     const button = entry.button;
     const rect = entry.anchor.getBoundingClientRect();
     const width = button.offsetWidth || 58;
@@ -375,19 +497,14 @@
     }
     button.style.display = "inline-flex";
 
-    // A field with its own scrollbar keeps the button clear of it.
-    const bar = Math.max(
-      0,
-      (entry.anchor.offsetWidth || 0) - (entry.anchor.clientWidth || 0)
+    const spot = offsetInField(
+      rect,
+      width,
+      height,
+      scrollbarWidth(entry.anchor)
     );
-
-    let left = Math.max(rect.left, rect.right - width - INSET - bar);
-    // Single-line fields have no room above the text, so the button centres on
-    // the right-hand end instead of tucking into the corner.
-    let top =
-      rect.height < height + INSET * 2 + 6
-        ? rect.top + (rect.height - height) / 2
-        : rect.top + INSET;
+    let left = rect.left + spot.left;
+    let top = rect.top + spot.top;
 
     // Half-scrolled fields keep their button on the part still showing rather
     // than letting it ride out past the edge of the form.
@@ -399,13 +516,26 @@
     button.style.top = Math.round(top - from.top) + "px";
   }
 
+  /* Scrolling only moves what the browser isn't already moving: an inline
+   * button travels with its wrapper and must be left alone, or it would be
+   * repositioned a frame late — the wiggle this placement exists to avoid. */
   function placeAll() {
-    if (!root || !attached.size) return;
-    const origin = layerOrigin();
+    if (!root && !attached.size) return;
+    const origin = root ? layerOrigin() : null;
     attached.forEach(function (entry) {
-      place(entry, origin);
+      if (!entry.host) placeFloating(entry, origin);
     });
     if (menuOwner) placeMenu(menuOwner, origin);
+  }
+
+  // Coalesced into a frame so a burst of scroll events costs one pass.
+  let framePending = null;
+  function onViewportChange() {
+    if (framePending) return;
+    framePending = requestAnimationFrame(function () {
+      framePending = null;
+      placeAll();
+    });
   }
 
   /* ---------------- the dropdown ---------------- */
@@ -714,6 +844,7 @@
         entry.anchor = field.anchor;
         entry.container = container; // the form the button is kept inside
         entry.notes = notes;
+        remount(entry);
         place(entry, origin);
       });
     });
@@ -736,8 +867,8 @@
   function start() {
     if (sweepTimer) return;
     sweepTimer = setInterval(tick, SWEEP_MS);
-    window.addEventListener("scroll", placeAll, true);
-    window.addEventListener("resize", placeAll);
+    window.addEventListener("scroll", onViewportChange, true);
+    window.addEventListener("resize", onViewportChange);
     tick();
   }
 
@@ -746,8 +877,8 @@
       clearInterval(sweepTimer);
       sweepTimer = null;
     }
-    window.removeEventListener("scroll", placeAll, true);
-    window.removeEventListener("resize", placeAll);
+    window.removeEventListener("scroll", onViewportChange, true);
+    window.removeEventListener("resize", onViewportChange);
     detachAll();
   }
 
@@ -761,7 +892,10 @@
   }
 
   CompassToolkit.observeFeature(FEATURE, function (settings) {
+    // Buttons are mounted per placement, so a change of it rebuilds them.
+    const moved = config.placement !== settings.placement;
     config = settings;
+    if (moved) detachAll();
     apply();
   });
 
