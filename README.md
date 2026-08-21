@@ -68,11 +68,29 @@ view you actually use as the page loads.
 
 - **Open the calendar on**: Day, Week, Month, Term or List. Set to **Term** to
   start with.
+- **Start the week on Monday**: lays the Month and Term views out Monday to
+  Sunday. On by default.
+- **Hide weekends**: leaves Saturday and Sunday out of the Month and Term
+  views, so the five school days have the whole width. Off by default.
+
+The calendar is held back until it has settled, so you get the finished view
+in one go rather than watching Compass's Week view appear and then be
+switched out from under you. If anything stalls it is shown regardless.
 
 It switches once, as the page comes up. Changing view by hand afterwards
 sticks, and nothing pulls you back. If Compass is slow to draw its toolbar it
 waits for it, and if the view still won't move it leaves the page alone rather
 than clicking at it.
+
+Compass already starts its **Week** view on Monday and leaves Month and Term
+starting on Sunday, which is the odd split this evens up. It is done by
+changing the setting the calendar itself lays out from, so the dates, events
+and week numbers all move together rather than the columns being shuffled
+around underneath them. Turning it back off takes a page reload.
+
+Hiding weekends takes the columns out rather than painting over them, so an
+event running from Friday into Monday still lines up with the days it covers.
+Turning it back off puts the weekends straight back, with no reload.
 
 Set this to **Term** and the Term Calendar Printer is always ready to capture,
 since that is the view it needs.

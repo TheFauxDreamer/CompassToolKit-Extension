@@ -166,10 +166,10 @@ var CompassToolkit = (function () {
       key: "calendarView",
       colour: { base: "#5d4037", strong: "#46302a", soft: "#efe9e7" },
       name: "Preferred Calendar View",
-      version: "1.0",
+      version: "1.2",
       icon: "layout",
       description:
-        "Opens the calendar on the view you use, instead of the Week view Compass starts on.",
+        "Opens the calendar on the view you use, and starts its weeks on Monday.",
       where: "Calendar page",
       settings: [
         {
@@ -186,6 +186,22 @@ var CompassToolkit = (function () {
             { value: "list", label: "List" }
           ],
           default: "multiweek"
+        },
+        {
+          key: "mondayStart",
+          type: "toggle",
+          label: "Start the week on Monday",
+          description:
+            "Lays the Month and Term views out Monday to Sunday. Compass starts those weeks on Sunday, even though it already starts the Week view on Monday.",
+          default: true
+        },
+        {
+          key: "hideWeekends",
+          type: "toggle",
+          label: "Hide weekends",
+          description:
+            "Leaves Saturday and Sunday out of the Month and Term views, so the five school days have the whole width.",
+          default: false
         }
       ]
     },
