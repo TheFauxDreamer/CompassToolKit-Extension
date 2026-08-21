@@ -5,7 +5,13 @@ let enabledLayers = new Set();
 let eventLayers = new Map(); // Map of color to layer info
 let hideWeekends = false;
 let paperSize = 'a4';
+let fillPage = true; // Stretch weeks to the bottom of the printed page
 let eventFontSize = 9; // Default font size in pixels
+
+// Each week row is sized to its busiest day. This is the floor, so a week with
+// one or no events still reads as a row rather than a sliver. Raise it if the
+// printed grid looks too cramped; lower it to 1 to squeeze harder.
+const MIN_WEEK_ROWS = 2;
 
 // Read whatever the last capture stored. Kept in the same shape the page used
 // when this data came back from the service worker.
@@ -79,6 +85,7 @@ loadCapturedData((data) => {
     populateTermFilter();
     setupEventListeners();
     updatePaperSize();
+    updateFillPage(); // Match the checkbox's default (on)
     updateFontSize(); // Initialize font size
     renderCalendar();
     console.log('[CALENDAR.JS] ========== Initialization Complete ==========');
@@ -92,6 +99,11 @@ loadCapturedData((data) => {
 function updatePaperSize() {
   document.body.classList.remove('print-a4', 'print-a3');
   document.body.classList.add(`print-${paperSize}`);
+}
+
+// Toggle the print-time page-fill behaviour (screen layout is unaffected)
+function updateFillPage() {
+  document.body.classList.toggle('fill-page', fillPage);
 }
 
 // Update event font size
@@ -126,6 +138,12 @@ function setupEventListeners() {
   document.getElementById('hideWeekendsToggle').addEventListener('change', (e) => {
     hideWeekends = e.target.checked;
     renderCalendar();
+  });
+
+  // Fill page toggle
+  document.getElementById('fillPageToggle').addEventListener('change', (e) => {
+    fillPage = e.target.checked;
+    updateFillPage();
   });
 
   // Paper size change
@@ -199,7 +217,7 @@ function updateLayerNames(layerDataFromHTML) {
   console.log('[UPDATE LAYERS] ========== Starting Layer Name Update ==========');
   
   if (!layerDataFromHTML || !layerDataFromHTML.layers) {
-    console.log('[UPDATE LAYERS] No layer names captured, keeping colour labels');
+    console.log('[UPDATE LAYERS] No layer names captured — keeping colour labels');
     return;
   }
   
@@ -232,7 +250,7 @@ function updateLayerNames(layerDataFromHTML) {
     } else {
       // Normal: a calendar layer with no events in the captured term has no
       // colour to match against. Not a fault, so don't log it as one.
-      console.log(`  "${htmlLayer.name}" has no events in this term, skipped`);
+      console.log(`  "${htmlLayer.name}" has no events in this term — skipped`);
     }
   });
   
@@ -524,13 +542,6 @@ function renderCalendarGrid(startDate, endDate, events, showTermWeeks = false) {
   let termWeekNumber = 1;
   
   while (currentDate <= lastDay) {
-    html += `<div class="${weekClass}">`;
-    
-    // Add week number for term view
-    if (showTermWeeks) {
-      html += `<div class="week-number">Week ${termWeekNumber}</div>`;
-    }
-    
     // Build array of days for this week
     const weekDays = [];
     for (let i = 0; i < 7; i++) {
@@ -541,6 +552,17 @@ function renderCalendarGrid(startDate, endDate, events, showTermWeeks = false) {
     
     // Get all events for this week and categorize them
     const weekEvents = getWeekEvents(events, weekDays);
+    
+    // Height of the row is driven by the busiest visible day in it, so a quiet
+    // week takes only the space it needs. Hidden weekends don't count.
+    const weekRows = Math.max(MIN_WEEK_ROWS, countBusiestDay(weekEvents));
+    
+    html += `<div class="${weekClass}" style="--week-rows: ${weekRows};">`;
+    
+    // Add week number for term view
+    if (showTermWeeks) {
+      html += `<div class="week-number">Week ${termWeekNumber}</div>`;
+    }
     
     // Render each day (skip weekends if hidden)
     for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
@@ -600,6 +622,23 @@ function renderCalendarGrid(startDate, endDate, events, showTermWeeks = false) {
   
   html += '</div>';
   return html;
+}
+
+// How many event chips the fullest day in this week needs. Weekend columns are
+// skipped when they're hidden, so hiding them can also shorten the row.
+function countBusiestDay(weekEvents) {
+  let mostRows = 0;
+  
+  weekEvents.forEach((dayEventsData, dayIndex) => {
+    // weekDays[0] is Monday, so Saturday and Sunday are indexes 5 and 6.
+    const isWeekend = dayIndex >= 5;
+    if (hideWeekends && isWeekend) return;
+    
+    const rows = dayEventsData.multiDay.length + dayEventsData.singleDay.length;
+    if (rows > mostRows) mostRows = rows;
+  });
+  
+  return mostRows;
 }
 
 // Get all events for a week, categorized by day

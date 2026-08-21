@@ -7,6 +7,14 @@
     :root {
       --event-font-size: 9px;
       --event-time-font-size: 8px;
+
+      /* Height budget for one event chip: text + padding + the 2px flex gap.
+         Derived from --event-font-size so it tracks the size stepper. */
+      --event-row-height: calc(var(--event-font-size) * 1.2 + 6px);
+      /* Space above the events: the day number plus the cell's own padding. */
+      --day-header-height: 30px;
+      /* Fallback when JS hasn't stamped a row count on the week. */
+      --week-rows: 4;
     }
 
     * {
@@ -230,7 +238,9 @@
       display: grid;
       grid-template-columns: 60px repeat(7, minmax(0, 1fr));
       border-bottom: 1px solid #ddd;
-      min-height: 120px;
+      /* Sized to the busiest day in this week rather than a flat 120px, so
+         quiet weeks collapse. Still only a minimum: content can exceed it. */
+      min-height: calc(var(--day-header-height) + var(--week-rows) * var(--event-row-height));
       width: 100%;
     }
 
@@ -257,7 +267,8 @@
       padding: 4px 6px;
       display: flex;
       flex-direction: column;
-      min-height: 120px;
+      /* Inherits --week-rows from the parent week. */
+      min-height: calc(var(--day-header-height) + var(--week-rows) * var(--event-row-height));
       overflow: hidden;
       width: 100%;
       min-width: 0;
@@ -351,6 +362,9 @@
         background: white;
         padding: 0;
         margin: 0;
+        /* Print shrinks the day number to 10px and halves the cell padding,
+           so the per-week overhead shrinks with it. */
+        --day-header-height: 20px;
       }
 
       .no-print {
@@ -448,45 +462,70 @@
       }
     }
 
-    /* A4 specific styles */
-    body.print-a4 .calendar-week {
-      min-height: 120px;
+    /* Fill the sheet: once the compact heights are worked out, hand whatever
+       page height is left over back to the weeks so the grid ends at the
+       bottom margin instead of halfway down.
+       min-height (rather than height) is deliberate — a term that genuinely
+       needs more room than one page still flows onto a second one instead of
+       being clipped. */
+    @media print {
+      body.fill-page .term-section {
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - var(--page-fill-offset, 24px));
+        margin-bottom: 0;
+      }
+
+      /* The first page also carries the h1 and the container's top padding. */
+      body.fill-page .term-section:first-child {
+        --page-fill-offset: 56px;
+      }
+
+      /* Each additional term starts its own page. Using + rather than
+         page-break-after avoids a trailing blank sheet. */
+      body.fill-page .term-section + .term-section {
+        page-break-before: always;
+      }
+
+      body.fill-page .calendar-grid {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+
+      body.fill-page .calendar-header {
+        flex: 0 0 auto;
+      }
+
+      /* Leftover height is shared out evenly; the content-derived min-height
+         from --week-rows still sets each week's floor, so a busy week stays
+         taller than a quiet one. */
+      body.fill-page .calendar-week {
+        flex: 1 0 auto;
+      }
     }
 
-    body.print-a4 .calendar-day {
-      min-height: 120px;
-    }
+    /* A4 specific styles */
+    /* Week heights now come from --week-rows (see .calendar-week), so paper
+       size only adjusts the per-row and per-header allowances. */
 
     @media print {
-      body.print-a4 .calendar-week {
-        min-height: 120px;
-      }
-      
-      body.print-a4 .calendar-day {
-        min-height: 120px;
-      }
-
       body.print-a4 .day-number .month-abbr {
         font-size: 8px;
       }
     }
 
     /* A3 specific styles */
-    body.print-a3 .calendar-week {
-      min-height: 160px;
-    }
-
-    body.print-a3 .calendar-day {
-      min-height: 160px;
+    body.print-a3 {
+      /* Roomier rows on the bigger sheet. */
+      --event-row-height: calc(var(--event-font-size) * 1.4 + 8px);
+      --day-header-height: 34px;
     }
 
     @media print {
-      body.print-a3 .calendar-week {
-        min-height: 160px;
-      }
-      
-      body.print-a3 .calendar-day {
-        min-height: 160px;
+      body.print-a3 {
+        --day-header-height: 26px;
       }
 
       body.print-a3 .day-number {
@@ -595,6 +634,10 @@
       <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 4px;">
         <input type="checkbox" id="hideWeekendsToggle" style="cursor: pointer;">
         <span>Hide Weekends</span>
+      </label>
+      <label style="display: flex; align-items: center; gap: 5px; cursor: pointer; padding: 8px 12px; background: white; border: 1px solid #ddd; border-radius: 4px;" title="Stretch weeks to fill the printed page">
+        <input type="checkbox" id="fillPageToggle" style="cursor: pointer;" checked>
+        <span>Fill Page</span>
       </label>
       <div class="font-size-control">
         <label>Event Text Size:</label>

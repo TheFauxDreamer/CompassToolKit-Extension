@@ -42,9 +42,18 @@ The button never appears on staff profiles.
 Captures a whole term from the Compass calendar and opens it as a printable
 page.
 
-Open your calendar in **Term** view, then use **Capture calendar data** in the
-menu, followed by **Open printable calendar**. The printable page offers a term,
-monthly, weekly list or daily list layout, and lets you:
+Open your calendar in **Term** view and use the **Print Calendar** button in
+the bottom-right corner of the page. It opens a small panel with **Capture
+calendar data** and **Open printable calendar**, shows what the last capture
+picked up, and says so when the calendar is on a view it can't capture from.
+Everything is on the page you are already looking at, so there is nothing to
+find in the menu first.
+
+The same two buttons are still in the menu if you would rather work from
+there, and either place captures for the other.
+
+The printable page offers a term, monthly, weekly list or daily list layout,
+and lets you:
 
 - show one term or all of them
 - filter by calendar layer

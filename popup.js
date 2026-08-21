@@ -497,6 +497,16 @@
     });
     wrap.appendChild(steps);
 
+    // The same two buttons are on the calendar page now. Worth saying here,
+    // because this menu is where people found them first.
+    wrap.appendChild(
+      el(
+        "div",
+        "panel-note",
+        "These are also on the calendar page itself, behind the Print Calendar button."
+      )
+    );
+
     const captureBtn = iconButton("btn block", "download", "Capture calendar data");
     const openBtn = iconButton(
       "btn secondary block",

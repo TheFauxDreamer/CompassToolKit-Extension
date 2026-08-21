@@ -624,6 +624,12 @@ textarea:focus {
   margin: 2px 0;
 }
 
+.panel-note {
+  margin: -4px 0 10px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
 .status {
   display: flex;
   align-items: flex-start;
