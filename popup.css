@@ -669,12 +669,59 @@ textarea:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 9px 16px;
   background: var(--bg);
   border-top: 1px solid var(--border);
 }
 
+.footer-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* A label rather than a .switch, so the wording is part of the hit area. The
+   switch inside is a span for the same reason: labels don't nest. */
+.footer-option {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.footer-option-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
 .version {
   font-size: 10.5px;
   color: var(--text-faint);
+}
+
+/* ---------------- colour coding ---------------- */
+
+/* Every accented rule above already reads --accent, --accent-strong and
+   --accent-soft, so a row only has to redefine those three on itself and its
+   icon, switch, buttons, chips and pills all follow.
+
+   Only features that are on are coloured. A colour then means "this one is
+   doing something", and the off ones stay out of the way instead of adding to
+   the noise this is meant to cut down. */
+body.colour-coded .feature[data-enabled="true"] {
+  --accent: var(--feature-colour);
+  --accent-strong: var(--feature-colour-strong);
+  --accent-soft: var(--feature-colour-soft);
+
+  /* A stripe down the edge, so the list can be scanned without being read.
+     An inset shadow rather than a border, which would shift the row inwards
+     and leave the uncoloured rows misaligned. */
+  box-shadow: inset 3px 0 0 var(--feature-colour);
+}
+
+/* The panel paints its own background over the row's stripe, so it needs a
+   matching one to carry the colour down past the row it belongs to. */
+body.colour-coded .feature[data-enabled="true"] .feature-panel {
+  box-shadow: inset 3px 0 0 var(--feature-colour);
 }

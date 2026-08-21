@@ -682,6 +682,12 @@
   function buildFeature(feature) {
     const section = el("section", "feature");
     section.dataset.key = feature.key;
+    /* The row carries its own colours and the stylesheet decides whether to
+     * use them, so switching the coding on and off is a class on the body
+     * rather than a re-render. */
+    section.style.setProperty("--feature-colour", feature.colour.base);
+    section.style.setProperty("--feature-colour-strong", feature.colour.strong);
+    section.style.setProperty("--feature-colour-soft", feature.colour.soft);
 
     const head = el("div", "feature-head");
     const expandable = hasPanel(feature);
@@ -756,7 +762,29 @@
       listEl.appendChild(buildFeature(feature));
     });
     updateSummary();
+    applyColourCoding();
   }
+
+  /* ---------------- colour coding ---------------- */
+
+  const colourToggle = document.getElementById("colourToggle");
+
+  function applyColourCoding() {
+    const on = !!settings[CompassToolkit.UI_KEY].colourCoded;
+    colourToggle.checked = on;
+    document.body.classList.toggle("colour-coded", on);
+  }
+
+  colourToggle.addEventListener("change", function () {
+    // The switch is live before the stored settings have arrived.
+    if (!settings) {
+      colourToggle.checked = !colourToggle.checked;
+      return;
+    }
+    settings[CompassToolkit.UI_KEY].colourCoded = colourToggle.checked;
+    applyColourCoding();
+    save();
+  });
 
   /* ---------------- boot ---------------- */
 

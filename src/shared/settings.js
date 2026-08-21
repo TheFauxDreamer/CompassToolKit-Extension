@@ -104,6 +104,7 @@ var CompassToolkit = (function () {
   const FEATURES = [
     {
       key: "timetablePrinter",
+      colour: { base: "#1976d2", strong: "#1565c0", soft: "#e8f1fc" },
       name: "Timetable Printer",
       version: "2.3",
       icon: "printer",
@@ -123,6 +124,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "clearanceForm",
+      colour: { base: "#b45309", strong: "#8f4207", soft: "#fdf0e1" },
       name: "Clearance Form",
       version: "1.3.1",
       icon: "clipboard",
@@ -150,6 +152,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "calendarPrinter",
+      colour: { base: "#2e7d32", strong: "#226325", soft: "#e8f4e9" },
       name: "Term Calendar Printer",
       version: "1.5",
       icon: "calendar",
@@ -161,6 +164,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "chronicleAnywhere",
+      colour: { base: "#6a1b9a", strong: "#55137c", soft: "#f3e9f8" },
       name: "Chronicle Anywhere",
       version: "1.0",
       icon: "note",
@@ -202,6 +206,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "chronicleSnippets",
+      colour: { base: "#ad1457", strong: "#8c1046", soft: "#fbe9f0" },
       name: "Chronicle Snippets",
       version: "1.0",
       icon: "fileText",
@@ -239,6 +244,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "directoryFilter",
+      colour: { base: "#00838f", strong: "#006670", soft: "#e0f2f4" },
       name: "Clean Staff Directory",
       version: "1.0",
       icon: "filter",
@@ -259,6 +265,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "noNewTabs",
+      colour: { base: "#c62828", strong: "#a11f1f", soft: "#fbeaea" },
       name: "No New Tabs",
       version: "1.2",
       icon: "link",
@@ -286,6 +293,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "hideSupportButton",
+      colour: { base: "#455a64", strong: "#35464e", soft: "#eceff1" },
       name: "Hide Support Button",
       version: "1.0",
       icon: "messageOff",
@@ -297,6 +305,7 @@ var CompassToolkit = (function () {
     },
     {
       key: "attendanceNotes",
+      colour: { base: "#4527a0", strong: "#371e80", soft: "#ebe8f7" },
       name: "Quick Attendance Notes",
       version: "1.0.0",
       icon: "checkSquare",
@@ -312,6 +321,17 @@ var CompassToolkit = (function () {
     FEATURE_BY_KEY[f.key] = f;
   });
 
+  /* How the menu itself looks, kept beside the feature settings so it syncs
+   * with them. It sits under its own key rather than in FEATURES because it
+   * turns nothing on: no content script reads it, and it is not counted in the
+   * "features on" summary. */
+  const UI_KEY = "ui";
+  const UI_DEFAULTS = {
+    /* On out of the box. Nine rows in the one accent read as a single block,
+     * which is what made the menu hard to tell apart in the first place. */
+    colourCoded: true
+  };
+
   function defaults() {
     const out = {};
     FEATURES.forEach(function (feature) {
@@ -324,6 +344,7 @@ var CompassToolkit = (function () {
       });
       out[feature.key] = entry;
     });
+    out[UI_KEY] = Object.assign({}, UI_DEFAULTS);
     return out;
   }
 
@@ -625,6 +646,7 @@ var CompassToolkit = (function () {
     SETTINGS_KEY: SETTINGS_KEY,
     FEATURES: FEATURES,
     FEATURE_BY_KEY: FEATURE_BY_KEY,
+    UI_KEY: UI_KEY,
     DATA_KEYS: DATA_KEYS,
     defaults: defaults,
     withDefaults: withDefaults,

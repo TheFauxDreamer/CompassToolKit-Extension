@@ -7,6 +7,12 @@ on or off takes effect straight away on any Compass tab you already have open.
 Everything is on by default except **Chronicle Anywhere** and **Hide Support
 Button**, which start off.
 
+Each feature has its own colour in the menu, so the rows can be told apart at a
+glance: the icon, the switch and a stripe down the edge all take it, and the
+feature's settings panel follows. Only features that are on are coloured, so
+the colour doubles as a sign that something is running. Turn **Colour code**
+off at the bottom of the menu and the whole thing goes back to the one accent.
+
 ## Timetable Printer
 
 Adds a **Print Timetable** button to the Schedule tab of a staff or student

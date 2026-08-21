@@ -17,10 +17,19 @@
     <main class="features" id="features"></main>
 
     <footer class="app-footer">
-      <span class="version" id="version"></span>
-      <button type="button" class="link-btn" id="resetBtn">
-        Reset to defaults
-      </button>
+      <label class="footer-option">
+        <span class="switch small">
+          <input type="checkbox" id="colourToggle" />
+          <span class="slider"></span>
+        </span>
+        <span class="footer-option-label">Colour code</span>
+      </label>
+      <div class="footer-end">
+        <span class="version" id="version"></span>
+        <button type="button" class="link-btn" id="resetBtn">
+          Reset to defaults
+        </button>
+      </div>
     </footer>
 
     <script src="src/shared/settings.js"></script>
