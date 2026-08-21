@@ -316,6 +316,26 @@ var CompassToolkit = (function () {
       ]
     },
     {
+      key: "staffCards",
+      colour: { base: "#827717", strong: "#6b6113", soft: "#f4f2e2" },
+      name: "Staff Card Printer",
+      version: "1.0",
+      icon: "idCard",
+      description:
+        "Builds a printable page of the staff cards themselves, photos and all.",
+      where: "Staff directory",
+      settings: [
+        {
+          key: "includePhotos",
+          type: "toggle",
+          label: "Include photos",
+          description:
+            "Leave photos out for a smaller, faster page that fits more people to a sheet.",
+          default: true
+        }
+      ]
+    },
+    {
       key: "noNewTabs",
       colour: { base: "#c62828", strong: "#a11f1f", soft: "#fbeaea" },
       name: "No New Tabs",
@@ -648,6 +668,7 @@ var CompassToolkit = (function () {
     student: "capture.studentInfo",
     school: "capture.schoolInfo",
     calendar: "capture.calendar",
+    staff: "capture.staffCards",
     terms: "capture.terms",
     layers: "capture.layers"
   };

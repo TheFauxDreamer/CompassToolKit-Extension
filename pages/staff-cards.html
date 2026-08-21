@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Cards</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f5f5;
+    color: #1a2330;
+    padding: 20px;
+  }
+
+  /* ---------------- controls ---------------- */
+
+  .controls {
+    max-width: 1100px;
+    margin: 0 auto 18px;
+    padding: 14px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .controls h1 {
+    flex: 1;
+    min-width: 180px;
+    font-size: 17px;
+    color: #827717;
+  }
+
+  .controls .count { font-size: 12.5px; color: #6b7688; font-weight: 400; }
+
+  .field { display: flex; align-items: center; gap: 6px; font-size: 12.5px; }
+  .field label { color: #6b7688; }
+
+  select {
+    padding: 5px 7px;
+    font: inherit;
+    font-size: 12.5px;
+    border: 1px solid #d3d9e3;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    background: #827717;
+    border: 0;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  .btn:hover { background: #6b6113; }
+  .btn.secondary { color: #1a2330; background: #eef1f6; border: 1px solid #d3d9e3; }
+  .btn.secondary:hover { background: #e2e6ed; }
+
+  .note {
+    max-width: 1100px;
+    margin: 0 auto 18px;
+    padding: 14px 16px;
+    background: #fff;
+    border-left: 4px solid #827717;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #6b7688;
+  }
+
+  /* ---------------- sheets ---------------- */
+
+  /* Every sheet is exactly one page of printable area and every card is a
+     fixed size, so how many fit is worked out rather than left to the
+     browser. Nothing can straddle a page break because nothing is allowed to
+     be taller than the sheet it is placed on. */
+  #sheets { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+  .sheet {
+    position: relative;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+    overflow: hidden;
+    display: grid;
+    align-content: start;
+  }
+
+  .card {
+    overflow: hidden;
+    border: 1px solid #d8dbe2;
+    border-radius: 2mm;
+    padding: 1.6mm;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+  }
+
+  .photo {
+    flex: none;
+    border-radius: 1.5mm;
+    background: #eef1f6;
+    /* Compass photos are portrait head shots, so the frame is portrait too
+       and the crop is taken from the top. A wide frame over a portrait photo
+       keeps the middle and loses the head. */
+    object-fit: cover;
+    object-position: 50% 15%;
+    display: block;
+  }
+
+  .photo.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #b5bcc7;
+    font-size: 7mm;
+  }
+
+  .who {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Photo above: the frame runs the width of the card. */
+  .card.above .photo { width: 100%; }
+  .card.above .who { margin-top: 1.2mm; }
+
+  /* Photo beside: a short, wide card that fits many more to a sheet. */
+  .card.beside { flex-direction: row; gap: 1.6mm; }
+  .card.beside .who { flex: 1; }
+  /* The status sits over the top-right corner, so the name keeps clear of it
+     rather than running underneath. */
+  .card.beside .name { padding-right: 7mm; }
+
+  .name {
+    font-weight: 700;
+    line-height: 1.15;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .row { display: flex; gap: 1mm; line-height: 1.25; overflow: hidden; white-space: nowrap; }
+  .row .k { color: #6b7688; flex: none; }
+  .row .v { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+
+  .email {
+    margin-top: auto;
+    padding-top: 0.6mm;
+    color: #827717;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chip {
+    position: absolute;
+    top: 1.6mm;
+    right: 1.6mm;
+    padding: 0.3mm 1.4mm;
+    border-radius: 4mm;
+    background: #e8f4e9;
+    color: #2e7d32;
+    font-weight: 600;
+  }
+  .card { position: relative; }
+  .chip.other { background: #eef1f6; color: #6b7688; }
+
+  /* Black and white, for a printer that has no colour left. */
+  body.bw .controls h1,
+  body.bw .email { color: #000 !important; }
+  body.bw .chip { background: #fff !important; color: #000 !important; border: 1px solid #000; }
+  body.bw .card { border-color: #000 !important; }
+  body.bw .photo { filter: grayscale(1); }
+
+  /* ---------------- print ---------------- */
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .controls, .note { display: none !important; }
+    #sheets { display: block; gap: 0; }
+    .sheet {
+      box-shadow: none;
+      margin: 0;
+      /* One sheet, one page. */
+      break-after: page;
+      page-break-after: always;
+    }
+    .sheet:last-child { break-after: auto; page-break-after: auto; }
+    .card, .photo { break-inside: avoid; page-break-inside: avoid; }
+    /* Backgrounds and photos are the point of printing cards. */
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+  <div class="controls">
+    <h1>Staff Cards <span class="count" id="count"></span></h1>
+    <div class="field">
+      <label for="paper">Paper</label>
+      <select id="paper">
+        <option value="a4-portrait">A4 portrait</option>
+        <option value="a4-landscape">A4 landscape</option>
+        <option value="a3-portrait">A3 portrait</option>
+        <option value="a3-landscape">A3 landscape</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="cols">Across</label>
+      <select id="cols">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="shape">Layout</label>
+      <select id="shape">
+        <option value="above">Photo above</option>
+        <option value="beside">Photo beside</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="photos">Photos</label>
+      <select id="photos">
+        <option value="yes">Show</option>
+        <option value="no">Hide</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bw">Colour</label>
+      <select id="bw">
+        <option value="colour">Colour</option>
+        <option value="bw">Black and white</option>
+      </select>
+    </div>
+    <button class="btn" id="printBtn">Print</button>
+    <button class="btn secondary" id="closeBtn">Close</button>
+  </div>
+
+  <div class="note" id="note" hidden></div>
+  <div id="sheets"></div>
+
+  <script src="../src/shared/settings.js"></script>
+  <script src="staff-cards.js"></script>
+</body>
+</html>

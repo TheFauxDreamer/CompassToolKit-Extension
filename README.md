@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Ten Compass improvements in one extension. Each can be turned on or off from
+Eleven Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -189,6 +189,42 @@ still run to more than one page they are read into one list the same way. The pa
 with one that describes what you can actually see, so **Showing 1-100 of 134**
 becomes **Showing all 100 (34 hidden)**. Searching or sorting still works; the
 list is rebuilt behind you when it does.
+
+## Staff Card Printer
+
+Compass's own **Download PDF** on the staff directory gives you a list of names
+and details. This prints the cards themselves, photo and all, which is what is
+actually wanted for a staffroom wall or a relief folder.
+
+Use **Print Staff Cards**, which sits next to Compass's own **Download PDF** on
+the directory toolbar and is a copy of that button, so it looks like it belongs
+there. If the toolbar can't be found it falls back to a button in the
+bottom-right corner rather than not appearing. The printable page lets you
+choose:
+
+- A4 or A3, portrait or landscape
+- how many cards across, from two to six
+- the photo above the details for a wall display, or beside them for a compact
+  list that fits far more to a page
+- photos or no photos
+- colour or black and white
+
+Whatever the directory is showing is what prints, so with Clean Staff Directory
+on you get the real staff and none of the system accounts, and with **Show
+everyone on one page** you get all of them in one go rather than a page at a
+time.
+
+Every sheet is laid out to be exactly one page and every card on it is the same
+fixed size, so nothing is ever split across a page break. Cards are then
+stretched to fill the sheet, so the leftover paper at the foot of a page goes
+into the photos instead of going to waste, and the photo frame is portrait to
+match the head shots Compass stores. The text is measured after it is drawn and
+the cards grown if anything came up short, so a long name or a long email
+address pushes nothing off the bottom.
+
+Photos are copied while the page still has your Compass session and shrunk to
+printing size on the way, since the printable page has no session of its own
+and would otherwise show empty frames.
 
 ## No New Tabs
 
