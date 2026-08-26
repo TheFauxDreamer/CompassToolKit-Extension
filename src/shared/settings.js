@@ -364,6 +364,47 @@ var CompassToolkit = (function () {
       ]
     },
     {
+      key: "menuDeclutter",
+      colour: { base: "#00695c", strong: "#004d40", soft: "#e0efec" },
+      name: "Menu Declutter",
+      version: "1.0",
+      icon: "menu",
+      description:
+        "Hides the paid-module adverts from the navigation menus, and any heading left empty by them.",
+      where: "All Compass pages",
+      custom: "menuItems",
+      settings: [
+        /* Phrased as showing rather than hiding, so every switch in this
+         * panel means the same thing: on is on the menu. Both start off,
+         * which is the decluttered state. */
+        {
+          key: "showAdverts",
+          type: "toggle",
+          label: "Show module adverts",
+          description:
+            "The entries Compass uses to advertise modules your school has not bought.",
+          default: false
+        },
+        {
+          key: "showEmptyHeadings",
+          type: "toggle",
+          label: "Show empty headings",
+          description:
+            "A subheading, or a whole menu, with nothing left under it once the rest is hidden.",
+          default: false
+        },
+        {
+          /* The menu entries chosen for hiding, each stored by its own link.
+           * `data` is a value the feature keeps but the popup draws through a
+           * panel of its own, since the choices are read off the open page
+           * rather than typed in. */
+          key: "hidden",
+          type: "data",
+          default: []
+        }
+      ]
+    },
+    {
       key: "hideSupportButton",
       colour: { base: "#455a64", strong: "#35464e", soft: "#eceff1" },
       name: "Hide Support Button",

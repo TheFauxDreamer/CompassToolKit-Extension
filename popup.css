@@ -409,6 +409,49 @@ input[type="text"]:focus {
   border-color: var(--accent);
 }
 
+/* ---------------- menu entries ---------------- */
+
+.menu-list {
+  margin-top: 9px;
+}
+
+.menu-group + .menu-group {
+  margin-top: 11px;
+}
+
+.menu-group-name,
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 9px;
+}
+
+.menu-group-name {
+  padding: 4px 0 5px;
+  font-size: 12px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-item {
+  padding: 5px 0 5px 10px;
+  font-size: 11.5px;
+}
+
+.menu-item + .menu-item {
+  border-top: 1px dashed var(--border);
+}
+
+/* Without this the label refuses to shrink and widens the whole popup. */
+.menu-group-name > span,
+.menu-item > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ---------------- buttons ---------------- */
 
 .btn {

@@ -39,6 +39,11 @@ var CompassToolkitIcons = (function () {
       ["line", { x1: "8", y1: "2", x2: "8", y2: "6" }],
       ["line", { x1: "3", y1: "10", x2: "21", y2: "10" }]
     ],
+    menu: [
+      ["line", { x1: "3", y1: "6", x2: "21", y2: "6" }],
+      ["line", { x1: "3", y1: "12", x2: "21", y2: "12" }],
+      ["line", { x1: "3", y1: "18", x2: "13", y2: "18" }]
+    ],
     idCard: [
       ["rect", { x: "2", y: "5", width: "20", height: "14", rx: "2" }],
       ["circle", { cx: "8.5", cy: "11", r: "2" }],

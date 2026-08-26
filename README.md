@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Eleven Compass improvements in one extension. Each can be turned on or off from
+Twelve Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -239,6 +239,52 @@ Stops Compass opening a new tab every time you click something.
 
 Turn the whole feature off and every link goes back to behaving the way Compass
 intended.
+
+## Menu Declutter
+
+Compass advertises modules your school has not bought inside its own navigation
+menus. This takes them out. They are tagged in the markup, either with a
+`feature-demo` class or by pointing at `FeatureDemonstration.aspx`, so they can
+be picked out exactly and nothing you actually have access to is touched.
+
+It also hides any subheading left with nothing under it, such as **Activity
+Management** or **School Administration**, and any whole menu whose dropdown was
+adverts and nothing else.
+
+- **Show module adverts**: off, which is what hides them. Turn it on to have
+  Compass's advertising back.
+- **Show empty headings**: off, so a subheading or a whole menu with nothing
+  left under it goes as well.
+
+Beyond the adverts, the menu can be trimmed to taste. Open the menu on the
+toolbar icon with a Compass page open and the panel reads that page's menus and
+lists them: every entry with a switch, grouped under the menu it belongs to.
+Switch one off and it goes. Each menu's own name has a switch too, for dropping
+a whole menu at once.
+
+Every switch in the panel means the same thing: on is on the menu. That is why
+the two above are worded as showing rather than hiding, even though both start
+off.
+
+Because the list comes off the page rather than being typed in, it only ever
+offers what that person actually has, and there is nothing to spell correctly.
+The placeholder Compass shows while a menu fills in, such as **Loading Class
+Items...**, is never offered, since it disappears on its own. In the rare case
+where a menu holds nothing else yet, the list waits a moment for the real
+entries rather than showing that menu short.
+Open the menu somewhere other than Compass and it says so rather than showing an
+empty list.
+
+The hiding is done with a stylesheet rather than by walking the page, so the
+adverts never appear and then vanish. Turning the feature off puts everything
+straight back, with no reload.
+
+Entries are remembered by their link, so a choice survives Compass rewording a
+menu. One that no longer exists is simply never matched.
+
+If Compass renames the `feature-demo` class in a future release the adverts will
+come back; the fix is the selectors at the top of
+`src/content/feature-menu-declutter.js`.
 
 ## Hide Support Button
 

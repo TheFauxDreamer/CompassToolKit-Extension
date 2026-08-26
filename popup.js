@@ -657,6 +657,139 @@
     return wrap;
   }
 
+  /* ---------------- menu entries panel ---------------- */
+
+  /* The entries are read off whichever Compass page is open rather than typed
+   * in, so what is offered is what that person actually has. A switch that is
+   * on is an entry that shows. */
+  function buildMenuPanel(feature) {
+    const wrap = el("div", "sub-setting");
+    wrap.appendChild(el("div", "sub-label", "Menu entries"));
+    wrap.appendChild(
+      el(
+        "div",
+        "sub-desc",
+        "Read from the Compass page you have open. Switch off anything you would rather not see."
+      )
+    );
+
+    const list = el("div", "menu-list");
+    const status = el("div", "status");
+    wrap.appendChild(list);
+    wrap.appendChild(status);
+
+    function setStatus(message, kind, iconName) {
+      status.className = "status" + (kind ? " " + kind : "");
+      status.hidden = !message;
+      status.innerHTML = "";
+      if (!message) return;
+      if (iconName) status.appendChild(CompassToolkitIcons.create(iconName, 13));
+      status.appendChild(el("span", null, message));
+    }
+
+    function hidden() {
+      const stored = settings[feature.key].hidden;
+      return Array.isArray(stored) ? stored : [];
+    }
+
+    function setShown(key, shown) {
+      const next = hidden().filter(function (item) {
+        return item !== key;
+      });
+      if (!shown) next.push(key);
+      settings[feature.key].hidden = next;
+      save();
+    }
+
+    function row(className, label, key) {
+      const line = el("div", className);
+      const text = el("span", null, label);
+      text.title = label;
+      line.appendChild(text);
+
+      const toggle = el("label", "switch small");
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.checked = hidden().indexOf(key) === -1;
+      input.setAttribute("aria-label", "Show " + label);
+      input.addEventListener("change", function () {
+        setShown(key, input.checked);
+      });
+      toggle.appendChild(input);
+      toggle.appendChild(el("span", "slider"));
+      line.appendChild(toggle);
+      return line;
+    }
+
+    function render(groups) {
+      list.innerHTML = "";
+      groups.forEach(function (group) {
+        const box = el("div", "menu-group");
+        // A whole menu can go, as well as anything inside it.
+        box.appendChild(
+          group.key
+            ? row("menu-group-name", group.name, group.key)
+            : el("div", "menu-group-name", group.name)
+        );
+        group.items.forEach(function (item) {
+          box.appendChild(row("menu-item", item.label, item.key));
+        });
+        list.appendChild(box);
+      });
+    }
+
+    /* A menu Compass is still filling in reports itself as loading. Asking
+     * again shortly is the difference between offering the whole menu and
+     * offering however much of it had arrived. */
+    const RETRY_MS = 700;
+    const RETRIES = 3;
+
+    function load(attempt) {
+      const tries = attempt || 0;
+      if (!tries) setStatus("Reading the menus from the open tab…");
+
+      getActiveTab().then(function (tab) {
+        const url = (tab && tab.url) || "";
+        if (!url.includes("compass.education")) {
+          setStatus("Open a Compass page to choose what to hide.", null, "alert");
+          return;
+        }
+        sendToTab(tab.id, { type: "CT_MENU_ITEMS" }).then(function (response) {
+          if (!response) {
+            setStatus("Refresh the Compass page, then reopen this.", null, "alert");
+            return;
+          }
+
+          if (response.loading && tries < RETRIES) {
+            setStatus("Waiting for the menus to finish loading…");
+            setTimeout(function () {
+              load(tries + 1);
+            }, RETRY_MS);
+            return;
+          }
+
+          const groups = response.groups || [];
+          if (!groups.length) {
+            setStatus("No menus found on that page.", null, "alert");
+            return;
+          }
+          render(groups);
+          const count = groups.reduce(function (total, group) {
+            return total + group.items.length;
+          }, 0);
+          setStatus(
+            count + " entries across " + groups.length + " menus" +
+              // Said plainly rather than quietly showing a short list.
+              (response.loading ? ", and one is still loading" : "")
+          );
+        });
+      });
+    }
+
+    load();
+    return wrap;
+  }
+
   /* ---------------- rows ---------------- */
 
   function buildPanel(feature) {
@@ -684,6 +817,10 @@
 
     if (feature.custom === "chronicleSnippets") {
       panel.appendChild(buildSnippetsPanel());
+    }
+
+    if (feature.custom === "menuItems") {
+      panel.appendChild(buildMenuPanel(feature));
     }
 
     return panel;
