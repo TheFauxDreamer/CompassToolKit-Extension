@@ -151,7 +151,9 @@ their names.
 The button appears wherever the entry form opens: the Chronicle page, a
 student's profile, or inside the Chronicle Anywhere pop-up. Fields that aren't
 free text, such as the type dropdown and date pickers, are left alone, and a
-field no snippet matches doesn't get a button at all.
+field no snippet matches doesn't get a button at all. Nor does anything outside
+the entry form: the comment box against each student while marking the roll is
+Compass's own, not part of a chronicle entry, so it is left as it is.
 
 Snippets are synced with your Chrome profile, so they follow you between
 machines. Chrome caps how much can be synced; if you ever hit it, the menu says

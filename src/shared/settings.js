@@ -252,7 +252,7 @@ var CompassToolkit = (function () {
       key: "chronicleSnippets",
       colour: { base: "#ad1457", strong: "#8c1046", soft: "#fbe9f0" },
       name: "Chronicle Snippets",
-      version: "1.0",
+      version: "1.0.1",
       icon: "fileText",
       description:
         "Pre-written wording, offered from a button inside the chronicle entry form.",

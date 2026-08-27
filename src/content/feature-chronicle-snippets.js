@@ -33,6 +33,11 @@
   const FEATURE = "chronicleSnippets";
   const SWEEP_MS = 300; // reposition and rescan while a form is open
   const CHRONICLE_HINT = /chronicle/i;
+  /* Used when a window has no title to go on. Stricter than the word alone,
+   * because plenty of Compass mentions it in passing: the roll has a chronicle
+   * shortcut on every student and a chronicle tag picker beside it, and none of
+   * that makes the roll an entry form. */
+  const CHRONICLE_PHRASE = /chronicle\s+entry|new\s+chronicle|add\s+chronicle/i;
   const FIELD_SELECTOR =
     'textarea, input, iframe, [contenteditable="true"],' +
     ' [contenteditable="plaintext-only"]';
@@ -64,7 +69,7 @@
      * buttons off unrelated forms. */
     const hit = title
       ? CHRONICLE_HINT.test(title)
-      : CHRONICLE_HINT.test(win.textContent || "");
+      : CHRONICLE_PHRASE.test(win.textContent || "");
 
     /* Only a yes is remembered: a window's contents arrive after it opens, so
      * an early no would stick for the wrong reason. */
@@ -94,10 +99,18 @@
     ".x-form-trigger-wrap, .x-form-field-trigger-wrap, .x-trigger-wrap," +
     " .x-form-date-wrap, .x-form-num-wrap";
 
+  /* Every field on an ExtJS form sits in one of these. Compass drops plain
+   * fields of its own into windows that have nothing to do with a form: the
+   * comment box against each student on the roll is a bare textarea in a table
+   * cell, and a Snippets button has no business on it. */
+  const FORM_ITEM =
+    ".x-form-item, .x-field, .x-form-item-body, .x-html-editor-wrap";
+
   function isEligible(el) {
     if (root && root.contains(el)) return false;
     if (el.disabled || el.readOnly) return false;
     if (el.closest(TRIGGER_WRAP)) return false;
+    if (!el.closest(FORM_ITEM)) return false;
 
     if (el.tagName === "INPUT") {
       if ((el.type || "text").toLowerCase() !== "text") return false;
