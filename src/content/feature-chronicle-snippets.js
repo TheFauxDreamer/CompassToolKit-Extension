@@ -436,21 +436,31 @@
 
   /* Where the button sits within the field, in the field's own box. Both
    * placements want the same spot; they differ only in what they measure it
-   * against. */
-  function offsetInField(rect, width, height, bar) {
+   * against.
+   *
+   * The bottom corner, because text starts at the top: sitting up there the
+   * button covers the first line of whatever has been written, which is the
+   * line worth reading. The bottom of a part-written field is usually empty. */
+  function offsetInField(rect, width, height, bars) {
+    const room = rect.height - height - INSET * 2;
     return {
-      left: Math.max(0, rect.width - width - INSET - bar),
-      // Single-line fields have no room above the text, so the button centres
-      // on the right-hand end instead of tucking into the corner.
+      left: Math.max(0, rect.width - width - INSET - bars.vertical),
+      // Single-line fields have no room above or below the text, so the button
+      // centres on the right-hand end instead of tucking into a corner.
       top:
-        rect.height < height + INSET * 2 + 6
+        room < 6
           ? (rect.height - height) / 2
-          : INSET
+          : rect.height - height - INSET - bars.horizontal
     };
   }
 
-  function scrollbarWidth(anchor) {
-    return Math.max(0, (anchor.offsetWidth || 0) - (anchor.clientWidth || 0));
+  /* A field that scrolls puts its scrollbars inside its own box, so the button
+   * is kept clear of both rather than sitting on top of them. */
+  function scrollbars(anchor) {
+    return {
+      vertical: Math.max(0, (anchor.offsetWidth || 0) - (anchor.clientWidth || 0)),
+      horizontal: Math.max(0, (anchor.offsetHeight || 0) - (anchor.clientHeight || 0))
+    };
   }
 
   /* Positioned against the wrapper's padding box, which is what an absolutely
@@ -479,7 +489,7 @@
       rect,
       button.offsetWidth || 58,
       button.offsetHeight || 18,
-      scrollbarWidth(entry.anchor)
+      scrollbars(entry.anchor)
     );
 
     const left =
@@ -510,12 +520,7 @@
     }
     button.style.display = "inline-flex";
 
-    const spot = offsetInField(
-      rect,
-      width,
-      height,
-      scrollbarWidth(entry.anchor)
-    );
+    const spot = offsetInField(rect, width, height, scrollbars(entry.anchor));
     let left = rect.left + spot.left;
     let top = rect.top + spot.top;
 

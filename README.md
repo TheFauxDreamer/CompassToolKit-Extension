@@ -141,8 +141,9 @@ in every field of the entry form, which is how the built-in ones ship. The
 fields on a chronicle entry are set up per school, so the extension can't guess
 their names.
 
-- **Button placement**: the button is put inside the field itself, so it scrolls
-  with the form the way everything else on it does. If that ever upsets a
+- **Button placement**: the button is put in the bottom-right of the field
+  itself, where it stays clear of the text, and scrolls with the form the way
+  everything else on it does. If that ever upsets a
   school's chronicle layout, set it to **Floating** and the button hovers over
   the field instead, touching nothing on Compass's own form.
 - **Insert a snippet**: where the text goes when the field already has something
