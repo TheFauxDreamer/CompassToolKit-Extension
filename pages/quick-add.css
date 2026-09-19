@@ -1,0 +1,121 @@
+:root {
+  --ink: #1c2233;
+  --muted: #5b6275;
+  --line: #d6dae4;
+  --wash: #f3f4f8;
+  --paper: #ffffff;
+  --bad: #b42318;
+  --good: #1e7b4a;
+  --layer: #7742a9;
+  /* The toolkit's colour for this feature. quick-add.js sets both from settings.js on load, so these are only the fallback. */
+  --accent: #303f9f;
+  --accent-soft: #e8eaf6;
+  accent-color: var(--accent);
+  font: 13px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+}
+* { box-sizing: border-box; }
+html { background: #f5f5f5; }
+body { margin: 20px auto; width: 460px; max-width: 100%; background: var(--paper); border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, .1); overflow: hidden; }
+[hidden] { display: none !important; }
+
+.top { display: flex; align-items: center; gap: 10px; padding: 12px 16px 10px; border-bottom: 4px solid var(--accent); }
+.top-icon { width: 30px; height: 30px; border-radius: 7px; flex-shrink: 0; }
+h1 { margin: 0; font-size: 15px; font-weight: 650; }
+.school { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+
+main, .blocker { padding: 12px 16px 16px; }
+.blocker { color: var(--ink); }
+.blocker b { display: block; margin-bottom: 4px; }
+
+.field { display: flex; flex-direction: column; gap: 3px; margin-bottom: 10px; flex: 1; min-width: 0; }
+.field > span { font-weight: 600; font-size: 12px; }
+.field em { font-style: normal; font-weight: 400; color: var(--muted); }
+.row { display: flex; gap: 10px; }
+input[type=text], input[type=date], input[type=time], input[type=number], select, textarea {
+  font: inherit; color: inherit; width: 100%;
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; background: var(--paper);
+}
+textarea { resize: vertical; }
+#bulk { font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: pre; }
+.check { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* The layer's own colour stays on the calendar picker, as a cue for which calendar is about to change. */
+#layer { border-left: 5px solid var(--layer); }
+
+.note { margin: -4px 0 10px; font-size: 12px; color: var(--muted); }
+
+/* Buttons that look like buttons: outlined while available, filled in the feature's colour once selected. */
+.tabs { display: flex; gap: 6px; margin: 4px 0 14px; }
+.tabs button {
+  flex: 1 1 auto; font: inherit; font-weight: 500; white-space: nowrap; padding: 7px 6px;
+  color: var(--ink); background: var(--wash); border: 1px solid var(--line); border-radius: 6px; cursor: pointer;
+}
+.tabs button:hover { background: var(--accent-soft); border-color: var(--accent); }
+.tabs button[aria-selected=true] { color: #fff; background: var(--accent); border-color: var(--accent); font-weight: 600; cursor: default; }
+
+/* The preview mimics how the item sits on the Compass month view. */
+.preview {
+  background: var(--wash); border-radius: 6px; padding: 8px 10px 8px 12px; margin: 2px 0 12px;
+  border-left: 5px solid var(--layer);
+}
+.preview-title { font-weight: 600; overflow-wrap: anywhere; }
+.preview-when { color: var(--muted); font-size: 12px; }
+
+button.primary, button.secondary, button.danger {
+  font: inherit; font-weight: 600; border-radius: 6px; padding: 8px 12px; cursor: pointer; width: 100%;
+}
+button.primary { background: var(--accent); color: #fff; border: 1px solid var(--accent); }
+button.secondary { background: var(--paper); color: var(--ink); border: 1px solid var(--line); margin-bottom: 10px; }
+button.danger { background: var(--paper); color: var(--bad); border: 1px solid var(--bad); }
+button.danger.armed { background: var(--bad); color: #fff; }
+.row > button { margin-bottom: 0; }
+button.spaced { margin-top: 8px; }
+button.link {
+  font: inherit; background: none; border: 0; padding: 0; color: var(--accent); font-weight: 600;
+  text-decoration: underline; cursor: pointer;
+}
+button:disabled { opacity: .55; cursor: default; }
+
+.status { margin: 8px 0 0; min-height: 1em; }
+.status.bad, td.bad { color: var(--bad); }
+.status.good, td.good { color: var(--good); }
+.help { margin: 0 0 8px; color: var(--muted); }
+.help b { color: var(--ink); font-weight: 600; }
+
+.rows { width: 100%; border-collapse: collapse; margin: 0 0 10px; font-size: 12px; }
+.rows th { text-align: left; font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--line); padding: 3px 4px; }
+.rows td { border-bottom: 1px solid var(--wash); padding: 4px; vertical-align: top; overflow-wrap: anywhere; }
+.rows td:first-child { color: var(--muted); width: 22px; }
+.sub, td.sub { color: var(--muted); font-size: 12px; }
+.rows td.act { width: 90px; text-align: right; }
+.rows td input { margin: 2px 0 0; }
+.scroll { max-height: 220px; overflow: auto; }
+
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+fieldset.repeat { border: 0; border-left: 3px solid var(--line); margin: 0 0 10px; padding: 2px 0 0 10px; }
+.field.every { flex: 0 0 110px; }
+.inline { display: flex; align-items: center; gap: 6px; }
+.inline input { width: 56px; }
+.days { display: flex; gap: 4px; flex-wrap: wrap; }
+.days label { position: relative; }
+.days input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.days span {
+  display: inline-block; min-width: 42px; text-align: center; padding: 4px 0; border-radius: 14px;
+  border: 1px solid var(--line); font-size: 12px; user-select: none;
+}
+.days input:checked + span { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.days input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.note.warn { color: var(--bad); }
+details.alt { margin: -4px 0 10px; font-size: 12px; }
+details.alt summary { cursor: pointer; color: var(--muted); }
+details.alt textarea { margin-top: 6px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; white-space: pre; }
+h2.minor { font-size: 13px; margin: 14px 0 2px; }
+input[type=file] { font: inherit; font-size: 12px; }
+#bResult .rows td:first-child { width: 42%; color: var(--ink); }
+#bResult .rows td:nth-child(2) { width: 16%; white-space: nowrap; }
+.sub.warn-text { color: var(--bad); }
+.rows.leavers td:nth-child(3) { white-space: nowrap; width: 52px; text-align: right; }

@@ -493,6 +493,18 @@ var CompassToolkit = (function () {
           default: "17:00"
         }
       ]
+    },
+    {
+      key: "calendarQuickAdd",
+      colour: { base: "#303f9f", strong: "#232f7a", soft: "#e8eaf6" },
+      name: "Calendar Quick Add",
+      version: "1.5.1",
+      icon: "calendarPlus",
+      description:
+        "Add, change and delete calendar items, including repeating items, staff birthdays and rows pasted from a spreadsheet.",
+      where: "Opens in its own window, through a signed-in Compass tab",
+      custom: "quickAdd",
+      settings: []
     }
   ];
 
@@ -770,9 +782,11 @@ var CompassToolkit = (function () {
   }
 
   /* Keys used for data kept on this device (chrome.storage.local): what is
-   * captured off Compass pages, and the Attendance Note Watcher's own state. */
+   * captured off Compass pages, the Attendance Note Watcher's own state, and
+   * the calendar Calendar Quick Add last used. */
   const DATA_KEYS = {
     watcher: "watcher.state",
+    quickAddLayer: "quickAdd.lastLayer",
     periods: "capture.periodsData",
     events: "capture.eventsData",
     student: "capture.studentInfo",

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+  <meta charset="utf-8">
+  <title>Calendar Quick Add</title>
+  <link rel="stylesheet" href="quick-add.css">
+</head>
+<body>
+  <header class="top">
+    <img class="top-icon" src="../icons/icon48.png" alt="">
+    <div>
+      <h1>Calendar Quick Add</h1>
+      <p id="school" class="school"></p>
+    </div>
+  </header>
+
+  <div id="blocker" class="blocker" hidden></div>
+
+  <main id="app" hidden>
+    <label class="field">
+      <span>Calendar</span>
+      <select id="layer"></select>
+    </label>
+    <p id="layerNote" class="note" hidden></p>
+
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabOne" aria-selected="true" aria-controls="panelOne">Add one</button>
+      <button role="tab" id="tabMany" aria-selected="false" aria-controls="panelMany">Paste many</button>
+      <button role="tab" id="tabManage" aria-selected="false" aria-controls="panelManage">Change or delete</button>
+      <button role="tab" id="tabBirthdays" aria-selected="false" aria-controls="panelBirthdays">Birthdays</button>
+    </div>
+
+    <section id="panelOne" role="tabpanel">
+      <label class="field"><span>Title</span><input id="title" type="text" autocomplete="off"></label>
+      <div class="row">
+        <label class="field"><span>Date</span><input id="date" type="date"></label>
+        <label class="field" id="endDateField"><span>Until <em>(optional)</em></span><input id="endDate" type="date"></label>
+      </div>
+      <label class="check"><input id="allDay" type="checkbox" checked> All day</label>
+      <div class="row" id="times" hidden>
+        <label class="field"><span>Starts</span><input id="startTime" type="time" value="09:00"></label>
+        <label class="field"><span>Ends</span><input id="endTime" type="time" value="10:00"></label>
+      </div>
+        <label class="check"><input id="oneRepeat" type="checkbox"> Repeats weekly</label>
+        <fieldset id="oneRepeatBox" class="repeat" hidden>
+          <legend class="sr-only">Repeat settings</legend>
+          <div class="row">
+            <label class="field every"><span>Every</span>
+              <span class="inline"><input id="oneEvery" type="number" min="1" max="52" value="1"> <span id="oneEveryUnit">week</span></span>
+            </label>
+            <label class="field"><span>Until</span><input id="oneUntil" type="date"></label>
+          </div>
+          <div class="field"><span>On</span><div class="days" id="oneDays" role="group" aria-label="Repeat on"></div></div>
+          <label class="check"><input id="oneTeachingOnly" type="checkbox"> Teaching days only</label>
+        </fieldset>
+      <label class="field"><span>Description <em>(optional)</em></span><textarea id="description" rows="2"></textarea></label>
+
+      <div class="preview" id="preview" aria-live="polite">
+        <div class="preview-title" id="pvTitle">Your item</div>
+        <div class="preview-when" id="pvWhen">Pick a date</div>
+        <div class="preview-when" id="pvRepeat" hidden></div>
+      </div>
+
+      <button id="addOne" class="primary">Add to calendar</button>
+      <p id="oneStatus" class="status" aria-live="polite"></p>
+    </section>
+
+    <section id="panelMany" role="tabpanel" hidden>
+      <p class="help">Copy rows from Excel or Google Sheets and paste them below. Use a header row with any of
+        <b>Date</b>, <b>End date</b>, <b>Title</b>, <b>Start time</b>, <b>End time</b>, <b>Description</b>, <b>Location</b>,
+        or no header and columns in that order. Leave the times blank for all-day items.</p>
+      <textarea id="bulk" rows="7" spellcheck="false" placeholder="Date	End date	Title	Start time	End time
+18/08/2026		Book Week parade	9:00am	10:00am
+24/08/2026	28/08/2026	Science Week"></textarea>
+      <label class="check"><input id="allowDupes" type="checkbox"> Add items even if they're already on this calendar</label>
+      <button id="checkRows" class="secondary">Check rows</button>
+      <div id="bulkResult"></div>
+      <button id="addMany" class="primary" hidden></button>
+      <button id="undoMany" class="secondary spaced" hidden></button>
+      <p id="manyStatus" class="status" aria-live="polite"></p>
+    </section>
+    <section id="panelManage" role="tabpanel" hidden>
+      <div id="mBrowse">
+        <div class="row">
+          <label class="field"><span>From</span><input id="mFrom" type="date"></label>
+          <label class="field"><span>To</span><input id="mTo" type="date"></label>
+        </div>
+        <label class="field"><span>Title contains <em>(optional)</em></span><input id="mFilter" type="text" autocomplete="off"></label>
+        <button id="mLoad" class="secondary">Show items</button>
+        <div id="mList"></div>
+        <div id="mActions" hidden>
+          <label class="check"><input id="mAll" type="checkbox"> Select all shown</label>
+          <div class="row">
+            <button id="mDelete" class="danger" disabled>Delete selected</button>
+            <button id="mKeep" class="secondary" hidden>Keep them</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="mEdit" hidden>
+        <label class="field"><span>Title</span><input id="eTitle" type="text" autocomplete="off"></label>
+        <div class="row">
+          <label class="field"><span>Date</span><input id="eDate" type="date"></label>
+          <label class="field" id="eEndDateField"><span>Until <em>(optional)</em></span><input id="eEndDate" type="date"></label>
+        </div>
+        <label class="check"><input id="eAllDay" type="checkbox"> All day</label>
+        <div class="row" id="eTimes" hidden>
+          <label class="field"><span>Starts</span><input id="eStart" type="time"></label>
+          <label class="field"><span>Ends</span><input id="eEnd" type="time"></label>
+        </div>
+        <p id="eSeriesLabel" class="note" hidden>This item repeats. You’re editing all of its sessions.</p>
+        <fieldset id="eRepeatBox" class="repeat" hidden>
+          <legend class="sr-only">Repeat settings</legend>
+          <div class="row">
+            <label class="field every"><span>Every</span>
+              <span class="inline"><input id="eEvery" type="number" min="1" max="52" value="1"> <span id="eEveryUnit">week</span></span>
+            </label>
+            <label class="field"><span>Until</span><input id="eUntil" type="date"></label>
+          </div>
+          <div class="field"><span>On</span><div class="days" id="eDays" role="group" aria-label="Repeat on"></div></div>
+          <label class="check"><input id="eTeachingOnly" type="checkbox"> Teaching days only</label>
+          <p class="note">Changes apply to every session in the series, including past ones. To delete it, tick it in the list and click Delete.</p>
+        </fieldset>
+        <label class="field"><span>Description <em>(optional)</em></span><textarea id="eDescription" rows="2"></textarea></label>
+        <p id="eWhen" class="help"></p>
+        <div class="row">
+          <button id="eSave" class="primary">Save changes</button>
+          <button id="eCancel" class="secondary">Back to list</button>
+        </div>
+      </div>
+
+      <p id="mStatus" class="status" aria-live="polite"></p>
+    </section>
+    <section id="panelBirthdays" role="tabpanel" hidden>
+      <p class="help">Import the staff export from Compass. Each person gets an all-day item that repeats every year
+        on their birthday. Their year of birth isn’t used. Service accounts (names ending in brackets or containing
+        “replacement”), staff who aren’t active, and anyone without a date of birth are skipped.</p>
+      <p id="bLayerNote" class="note" hidden></p>
+      <label class="field"><span>Staff export (CSV)</span><input id="bFile" type="file" accept=".csv,text/csv"></label>
+      <details class="alt">
+        <summary>Or paste the rows instead</summary>
+        <textarea id="bText" rows="5" spellcheck="false" aria-label="Staff export rows"
+          placeholder="Full Name	Date Of Birth	Status"></textarea>
+      </details>
+      <label class="field"><span>Title</span><input id="bTemplate" type="text" autocomplete="off"></label>
+      <p class="note">{name} is replaced with each person’s name.</p>
+      <label class="check"><input id="bFeb29" type="checkbox" checked> Show 29 February birthdays on 28 February</label>
+      <button id="bCheck" class="secondary">Check staff list</button>
+      <p id="bSummary" class="help"></p>
+      <div id="bResult"></div>
+      <button id="bAdd" class="primary" hidden></button>
+      <button id="bUndo" class="secondary spaced" hidden></button>
+      <div id="bLeavers" hidden>
+        <h2 class="minor">No longer in the export</h2>
+        <p class="note">These birthdays belong to people who aren’t active staff in this export. Stopping one keeps this
+          year’s birthday if it has already happened and removes every later year. Untick anyone to keep.</p>
+        <p id="bLeaverWarn" class="note warn" hidden></p>
+        <div id="bLeaverList"></div>
+        <div class="row">
+          <button id="bRemove" class="danger" disabled>Stop selected</button>
+          <button id="bKeep" class="secondary" hidden>Keep them</button>
+        </div>
+      </div>
+      <p id="bStatus" class="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <script src="../src/shared/settings.js"></script>
+  <script type="module" src="quick-add.js"></script>
+</body>
+</html>

@@ -8,6 +8,9 @@
   "use strict";
 
   const CALENDAR_PAGE = "pages/calendar.html";
+  const QUICK_ADD_PAGE = "pages/quick-add.html";
+  // Wide enough for the tool's 460px column plus a scrollbar.
+  const QUICK_ADD_WINDOW = { width: 520, height: 800 };
 
   let settings = null;
   let snippets = []; // chronicle snippets, stored under their own key
@@ -1011,6 +1014,40 @@
     return wrap;
   }
 
+  /* ---------------- calendar quick add panel ---------------- */
+
+  /* The tool is a page of its own, opened in a window of its own since it is
+   * too big for this menu. It works through a signed-in Compass tab, so the tab
+   * you are on now is handed over and it uses that one. */
+  function buildQuickAddPanel() {
+    const wrap = el("div", "sub-setting");
+    wrap.appendChild(
+      el(
+        "div",
+        "sub-desc",
+        "Add one item, paste many from a spreadsheet, change or delete what is there, or import staff birthdays. Keep a signed-in Compass tab open. The Calendar page is best, because the tool can then refresh it for you."
+      )
+    );
+
+    const openBtn = iconButton("btn block", "external", "Open Calendar Quick Add");
+    openBtn.addEventListener("click", function () {
+      getActiveTab().then(function (tab) {
+        let url = chrome.runtime.getURL(QUICK_ADD_PAGE);
+        if (tab && (tab.url || "").includes("compass.education")) {
+          url += "?tab=" + tab.id;
+        }
+        chrome.windows.create({
+          url: url,
+          type: "popup",
+          width: QUICK_ADD_WINDOW.width,
+          height: QUICK_ADD_WINDOW.height
+        });
+      });
+    });
+    wrap.appendChild(openBtn);
+    return wrap;
+  }
+
   /* ---------------- rows ---------------- */
 
   function buildPanel(feature) {
@@ -1048,6 +1085,10 @@
 
     if (feature.custom === "menuItems") {
       panel.appendChild(buildMenuPanel(feature));
+    }
+
+    if (feature.custom === "quickAdd") {
+      panel.appendChild(buildQuickAddPanel());
     }
 
     return panel;

@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Thirteen Compass improvements in one extension. Each can be turned on or off from
+Fourteen Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -346,3 +346,80 @@ tab when you arrive from an alert. With it off, you land on the default tab.
 
 This is the one feature that uses a background timer and the browser's
 notifications, which is why the extension asks for those permissions.
+
+## Calendar Quick Add
+
+Adds, changes and deletes items on a Compass calendar layer (for example a staff
+term planner), including repeating items, staff birthdays and rows pasted from a
+spreadsheet.
+
+Use **Open Calendar Quick Add** in the menu. It opens in its own window and works
+through a signed-in Compass tab, so keep one open. The Calendar page is best,
+because the tool can then refresh it for you after a change. If you open it
+while looking at a Compass tab, it uses that one. Pick a calendar layer at the
+top, then use one of four tabs:
+
+- **Add one**: fill in a single item. Use **Until** for an item that spans several
+  days, or tick **Repeats weekly** for one that happens on set days, such as every
+  Wednesday until the end of term.
+- **Paste many**: paste rows from Excel or Google Sheets, check them, then add.
+  Rows already on the calendar are skipped. After adding, **Undo** deletes the
+  items that batch created.
+- **Change or delete**: pick a date range (and optionally part of a title), then
+  edit an item or tick several and delete them. Deleting asks you to confirm
+  first. A repeating item shows as one row: **Edit all** changes every session
+  (title, times, days, end date), and ticking it deletes every session.
+- **Birthdays**: choose the staff export CSV from Compass, or paste its rows. Each
+  active staff member with a date of birth gets an all-day item repeating every
+  year on their birthday, titled "{name}'s birthday" by default. The year of birth
+  is never used. Service accounts (names ending in brackets, or containing
+  "replacement"), inactive staff, people with no date of birth and anyone already
+  on the calendar are skipped, and the check says why for each person. 29 February
+  birthdays go on 28 February unless you untick that. After adding, **Undo**
+  removes that batch. Birthdays can't be added to a calendar families can see.
+
+Each time you import a new export, birthdays on the calendar for people who are no
+longer active staff in it (missing from the export, inactive, or now a service
+account) are listed under **No longer in the export** and ticked. **Stop** keeps
+this year's birthday if it has already happened and removes every later year; if
+this year's hasn't happened yet, the birthday is removed completely. Possible name
+changes (a new person with the same birthday) and people whose date of birth is
+missing are listed but not ticked. If a lot of birthdays would stop at once, it
+warns that the export may have been filtered. If the export has no active staff at
+all, the birthdays are still listed but none are ticked.
+
+Spreadsheet columns for **Paste many** (the header row is optional; without one,
+use this order):
+
+| Date | End date | Title | Start time | End time | Description |
+|------|----------|-------|------------|----------|-------------|
+| 18/08/2026 | | Book Week parade | 9:00am | 10:00am | |
+| 24/08/2026 | 28/08/2026 | Science Week | | | |
+
+A `Location` column is also recognised. Dates can be `18/08/2026`, `2026-08-18` or
+`18 Aug 2026`, and slashes are read day first. Leave the times blank for
+all-day items.
+
+It doesn't store your password or cookies. It runs a small script inside your
+signed-in Compass tab that sends the same requests the Compass calendar page
+sends, which is why the extension asks for the scripting permission. Compass gives
+each item a new identifier every time it's loaded, so before editing or deleting
+it fetches the item again and sends that current copy. If the title, description,
+times or repeat settings have changed since you loaded the list (someone else
+edited it), it stops and leaves the item alone. Times are converted from the
+school's timezone, read from Compass, to UTC, which is what Compass stores.
+
+Limits:
+
+- It uses Compass's internal web API, which isn't documented and could change
+  after a Compass update.
+- Weekly repeats with an end date can be edited; yearly ones can only be added and
+  deleted. You can edit or delete all sessions of a repeating item, but changing or
+  deleting a single session, or "this and future sessions", must be done in
+  Compass. Repeats can't be added from **Paste many**.
+- It doesn't set categories, reminders or locations on edit.
+- Deleting is permanent. **Undo** only covers the most recent batch, and only
+  while the page stays open.
+- Changes to layers such as "Term Planner: Parents" are visible to families.
+- It can't change iCal-fed layers (for example School Holidays). Those change only
+  in the source calendar.
