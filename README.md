@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Twelve Compass improvements in one extension. Each can be turned on or off from
+Thirteen Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -305,4 +305,44 @@ drops you on the Attendance page's default tab. With this on, it opens the
 **Notes** tab directly.
 
 Navigating to the Attendance page any other way is left alone. Only the alert
-triggers the jump.
+triggers the jump, along with the notification and banner from the Attendance
+Note Watcher below, which count as the same alert.
+
+## Attendance Note Watcher
+
+Checks Compass on a timer for attendance notes waiting for review, and alerts
+you when new ones appear, so you don't have to keep looking at the home page to
+find out.
+
+An alert only goes out when the notes are new or the number waiting has gone
+up. Leaving them unreviewed does not keep pinging you.
+
+- **Check every**: 1, 2, 5, 10 or 15 minutes.
+- **Show a desktop notification**: a notification from your computer. Clicking
+  it opens the Attendance page.
+- **Keep it on screen until clicked**: stops the notification fading away on its
+  own.
+- **Show a banner in open Compass tabs**: a card in the top-right corner of
+  every Compass tab you have open, with **Review notes** and **Dismiss**. It
+  puts itself back if Compass clears it, until you dismiss it or open the
+  notes.
+- **Only check on weekdays**: limits checking to weekdays between a start and
+  end time. Off by default, which checks around the clock.
+
+The toolbar icon shows how many notes are waiting. Open the panel in the menu
+for the result of the last check, a **Check now** button, and **Review notes**
+when there is something to review. Under **Details** it shows what it asked
+Compass and what came back, and has a **Send test alert** button to see the
+notification and banner without waiting for real notes.
+
+It makes the same request the Compass home page makes for its own alerts, from
+inside an open Compass tab when there is one, so your signed-in session is used.
+It learns that request by watching the home page load, so open Compass once
+after installing. If your session has ended the badge shows a **?** and the
+panel tells you to sign in.
+
+With **Quick Attendance Notes** on, the Attendance page opens on the **Notes**
+tab when you arrive from an alert. With it off, you land on the default tab.
+
+This is the one feature that uses a background timer and the browser's
+notifications, which is why the extension asks for those permissions.

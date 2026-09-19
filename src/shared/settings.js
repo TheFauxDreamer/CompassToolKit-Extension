@@ -426,6 +426,73 @@ var CompassToolkit = (function () {
         "Clicking the “Attendance Notes require review” alert opens the Notes tab directly.",
       where: "Home page alert → Attendance",
       settings: []
+    },
+    {
+      key: "attendanceWatcher",
+      colour: { base: "#c2410c", strong: "#9a3412", soft: "#fdefe7" },
+      name: "Attendance Note Watcher",
+      version: "2.3.0",
+      icon: "bell",
+      description:
+        "Checks Compass on a timer and alerts you when new attendance notes need review.",
+      where: "Runs in the background, alerts on any Compass tab",
+      custom: "attendanceWatcher",
+      settings: [
+        {
+          key: "intervalMinutes",
+          type: "select",
+          label: "Check every",
+          description: "How often to ask Compass whether any notes are waiting.",
+          options: [
+            { value: "1", label: "1 minute" },
+            { value: "2", label: "2 minutes" },
+            { value: "5", label: "5 minutes" },
+            { value: "10", label: "10 minutes" },
+            { value: "15", label: "15 minutes" }
+          ],
+          default: "5"
+        },
+        {
+          key: "desktopNotifications",
+          type: "toggle",
+          label: "Show a desktop notification",
+          description: "A notification from your computer. Clicking it opens the notes.",
+          default: true
+        },
+        {
+          key: "requireInteraction",
+          type: "toggle",
+          label: "Keep it on screen until clicked",
+          description: "Stops the desktop notification fading away on its own.",
+          default: false
+        },
+        {
+          key: "inPageBanner",
+          type: "toggle",
+          label: "Show a banner in open Compass tabs",
+          description: "A card in the corner of every Compass tab you have open.",
+          default: true
+        },
+        {
+          key: "schoolHoursOnly",
+          type: "toggle",
+          label: "Only check on weekdays",
+          description: "Between the start and end times below. Off means around the clock.",
+          default: false
+        },
+        {
+          key: "startTime",
+          type: "time",
+          label: "Start checking at",
+          default: "07:00"
+        },
+        {
+          key: "endTime",
+          type: "time",
+          label: "Stop checking at",
+          default: "17:00"
+        }
+      ]
     }
   ];
 
@@ -702,8 +769,10 @@ var CompassToolkit = (function () {
     );
   }
 
-  /* Keys used for data captured off Compass pages (chrome.storage.local). */
+  /* Keys used for data kept on this device (chrome.storage.local): what is
+   * captured off Compass pages, and the Attendance Note Watcher's own state. */
   const DATA_KEYS = {
+    watcher: "watcher.state",
     periods: "capture.periodsData",
     events: "capture.eventsData",
     student: "capture.studentInfo",

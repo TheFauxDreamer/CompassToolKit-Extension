@@ -1,12 +1,17 @@
 /* Compass Toolkit: service worker.
  *
- * There is very little to do here: features run in content scripts and read
- * their own settings, and captured data goes straight to chrome.storage. This
- * only seeds the defaults on install so the popup opens with real values
- * rather than an empty object.
+ * Most features run in content scripts and read their own settings, and
+ * captured data goes straight to chrome.storage, so there is little to do
+ * here. This seeds the defaults on install so the popup opens with real values
+ * rather than an empty object, and loads the Attendance Note Watcher, the one
+ * feature that works in the background.
  */
 
-importScripts("src/shared/settings.js");
+importScripts(
+  "src/shared/settings.js",
+  "src/shared/alerts.js",
+  "src/background/attendance-watcher.js"
+);
 
 chrome.runtime.onInstalled.addListener(function (details) {
   // Goes through the shared helpers so `runtime.lastError` is always read,

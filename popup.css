@@ -17,6 +17,7 @@
   --accent-strong: #1565c0;
   --accent-soft: #e8f1fc;
   --danger: #c62828;
+  --attention: #c2410c;
   --success: #2e7d32;
   --track: #cbd2dd;
 }
@@ -390,7 +391,8 @@ input[type="text"]:focus {
   border-color: var(--accent);
 }
 
-.sub-select {
+.sub-select,
+.sub-time {
   flex-shrink: 0;
   max-width: 130px;
   margin-top: 1px;
@@ -404,7 +406,8 @@ input[type="text"]:focus {
   cursor: pointer;
 }
 
-.sub-select:focus {
+.sub-select:focus,
+.sub-time:focus {
   outline: none;
   border-color: var(--accent);
 }
@@ -493,6 +496,11 @@ input[type="text"]:focus {
   display: flex;
   width: 100%;
   margin-top: 7px;
+}
+
+/* .btn sets its own display, which would otherwise beat the hidden attribute. */
+.btn[hidden] {
+  display: none;
 }
 
 .link-btn {
@@ -702,6 +710,63 @@ textarea:focus {
 .status.error {
   border-color: var(--danger);
   color: var(--danger);
+}
+
+.status.attention {
+  border-color: var(--attention);
+  color: var(--attention);
+}
+
+/* ---------------- attendance note watcher ---------------- */
+
+.status-body {
+  min-width: 0;
+}
+
+.status-headline {
+  font-weight: 600;
+}
+
+.status-detail {
+  margin-top: 1px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.watcher-details {
+  margin-top: 9px;
+}
+
+.watcher-details summary {
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.watcher-details dl {
+  margin: 6px 0 8px;
+  font-size: 11px;
+}
+
+.watcher-details dt {
+  margin-top: 5px;
+  color: var(--text-muted);
+}
+
+.watcher-details dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.watcher-details code {
+  display: block;
+  padding: 4px 6px;
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 10.5px;
+  background: var(--bg-sunken);
+  border-radius: 4px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 .captured-at {

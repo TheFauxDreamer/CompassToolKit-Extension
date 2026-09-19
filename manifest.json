@@ -1,10 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Compass Toolkit",
-  "version": "1.8.0",
-  "description": "A set of Compass improvements in one extension: timetable printing, clearance forms, term calendars, chronicle snippets, directory filtering and fewer new tabs.",
+  "version": "1.9.0",
+  "description": "A set of Compass improvements in one extension: timetable printing, clearance forms, term calendars, chronicle snippets, directory filtering, fewer new tabs and attendance note alerts.",
   "permissions": [
-    "storage"
+    "storage",
+    "alarms",
+    "notifications"
   ],
   "host_permissions": [
     "*://*.compass.education/*"
@@ -35,12 +37,14 @@
       "js": [
         "src/shared/settings.js",
         "src/shared/icons.js",
+        "src/shared/alerts.js",
         "src/content/feature-no-new-tabs.js",
         "src/content/feature-chronicle.js",
         "src/content/feature-chronicle-snippets.js",
         "src/content/feature-hide-support.js",
         "src/content/feature-directory-filter.js",
         "src/content/feature-attendance-notes.js",
+        "src/content/feature-attendance-watcher.js",
         "src/content/feature-profile-tools.js",
         "src/content/feature-calendar.js",
         "src/content/feature-calendar-view.js",
@@ -62,6 +66,12 @@
     {
       "matches": ["*://*.compass.education/Organise/Calendar/*"],
       "js": ["src/page/week-start.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["*://*.compass.education/*"],
+      "js": ["src/page/alerts-hook.js"],
       "run_at": "document_start",
       "world": "MAIN"
     }

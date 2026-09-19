@@ -141,7 +141,10 @@
   function start() {
     if (!enabled || !onAttendancePage() || !flagIsFresh()) return;
     clearFlag(); // one shot, so a later refresh won't re-trigger
+    showNotesTab();
+  }
 
+  function showNotesTab() {
     const deadline = Date.now() + GIVE_UP_MS;
     let clicks = 0;
     let finished = false;
@@ -179,6 +182,18 @@
 
     attempt();
     setTimeout(stop, GIVE_UP_MS + 1000);
+  }
+
+  /* ---------- part 3: opened by the Attendance Note Watcher ---------- */
+
+  // Its notification and banner open this page from outside it, so there is
+  // no click here to catch. The background marks the tab first, but only while
+  // this feature is on, and this collects the mark.
+  if (CompassToolkit.isTopFrame && onAttendancePage()) {
+    chrome.runtime.sendMessage({ type: "CT_CLAIM_NOTES_TAB" }, function (reply) {
+      if (chrome.runtime.lastError) return;
+      if (reply && reply.open) CompassToolkit.whenReady(showNotesTab);
+    });
   }
 
   CompassToolkit.observeFeature(FEATURE, function (settings) {

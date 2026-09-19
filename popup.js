@@ -144,6 +144,37 @@
     return wrap;
   }
 
+  function buildTimeSetting(feature, setting) {
+    const wrap = el("div", "sub-setting");
+    const row = el("div", "sub-row");
+
+    const text = el("div", "sub-text");
+    text.appendChild(el("div", "sub-label", setting.label));
+    if (setting.description) {
+      text.appendChild(el("div", "sub-desc", setting.description));
+    }
+
+    const input = document.createElement("input");
+    input.type = "time";
+    input.className = "sub-time";
+    input.setAttribute("aria-label", setting.label);
+    input.value = settings[feature.key][setting.key];
+    input.addEventListener("change", function () {
+      // A cleared field would leave the check with no hours to work to.
+      if (!input.value) {
+        input.value = settings[feature.key][setting.key];
+        return;
+      }
+      settings[feature.key][setting.key] = input.value;
+      save();
+    });
+
+    row.appendChild(text);
+    row.appendChild(input);
+    wrap.appendChild(row);
+    return wrap;
+  }
+
   function buildListSetting(feature, setting) {
     const wrap = el("div", "sub-setting");
     wrap.appendChild(el("div", "sub-label", setting.label));
@@ -790,6 +821,196 @@
     return wrap;
   }
 
+  /* ---------------- attendance note watcher panel ---------------- */
+
+  const WATCHER_ERRORS = {
+    "no-origin": [
+      "Open Compass once to get started",
+      "The extension needs to know your school's Compass address."
+    ],
+    "needs-learning": [
+      "Reload the Compass homepage once",
+      "The extension learns how Compass fetches its alerts by watching the homepage load. After that, it can check on its own."
+    ],
+    "signed-out": [
+      "Sign in to Compass",
+      "Your Compass session has ended, so the check couldn't get your alerts."
+    ],
+    "unexpected-response": [
+      "Compass sent something unexpected",
+      "Reload the Compass homepage so the extension can re-learn the alerts request."
+    ]
+  };
+
+  function checkedAgo(timestamp) {
+    if (!timestamp) return "Not checked yet";
+    const mins = Math.round((Date.now() - timestamp) / 60000);
+    if (mins < 1) return "Checked just now";
+    if (mins === 1) return "Checked 1 minute ago";
+    if (mins < 60) return "Checked " + mins + " minutes ago";
+    return (
+      "Checked at " +
+      new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+    );
+  }
+
+  // Resolves the reply, or null if the background worker couldn't answer.
+  function sendToBackground(message) {
+    return new Promise(function (resolve) {
+      chrome.runtime.sendMessage(message, function (response) {
+        if (chrome.runtime.lastError) {
+          resolve(null);
+          return;
+        }
+        resolve(response || null);
+      });
+    });
+  }
+
+  /* What the last check found, with a button to run one now. Sits above the
+   * settings because looking in on the checks is what this panel is for. */
+  function buildWatcherPanel() {
+    const key = CompassToolkit.DATA_KEYS.watcher;
+    const wrap = el("div", "sub-setting");
+
+    const status = el("div", "status");
+    const checkedAt = el("div", "captured-at");
+
+    const buttons = el("div", "row-btns");
+    const reviewBtn = iconButton("btn secondary", "checkSquare", "Review notes");
+    reviewBtn.hidden = true;
+    const checkBtn = iconButton("btn", "refresh", "Check now");
+    buttons.appendChild(reviewBtn);
+    buttons.appendChild(checkBtn);
+
+    const details = el("details", "watcher-details");
+    details.appendChild(el("summary", null, "Details"));
+    const rows = el("dl");
+    details.appendChild(rows);
+    const testBtn = iconButton("btn secondary block", "bell", "Send test alert");
+    details.appendChild(testBtn);
+
+    function addRow(term, value) {
+      rows.appendChild(el("dt", null, term));
+      rows.appendChild(el("dd", null, value));
+    }
+
+    function render(state) {
+      const result = state.lastResult;
+      const error = state.lastError;
+      let kind = "";
+      let iconName = "check";
+      let headline;
+      let detail = "";
+
+      if (error) {
+        const known = WATCHER_ERRORS[error];
+        kind = "error";
+        iconName = "alert";
+        headline = known ? known[0] : "The last check didn't finish";
+        detail = known ? known[1] : error;
+      } else if (result && result.found) {
+        kind = "attention";
+        iconName = "alert";
+        headline =
+          typeof result.count === "number"
+            ? result.count +
+              " attendance note" + (result.count === 1 ? " needs" : "s need") +
+              " review"
+            : result.title || "Attendance notes need review";
+      } else if (result) {
+        kind = "success";
+        headline = "No attendance notes waiting";
+      } else {
+        iconName = "hourglass";
+        headline = "Waiting for the first check";
+      }
+
+      status.className = "status" + (kind ? " " + kind : "");
+      status.innerHTML = "";
+      status.appendChild(CompassToolkitIcons.create(iconName, 13));
+      const body = el("div", "status-body");
+      body.appendChild(el("div", "status-headline", headline));
+      if (detail) body.appendChild(el("div", "status-detail", detail));
+      status.appendChild(body);
+
+      checkedAt.textContent = checkedAgo(state.lastCheck);
+      reviewBtn.hidden = !(result && result.found && !error && state.origin);
+
+      const delivery = state.lastDelivery;
+      rows.innerHTML = "";
+      addRow(
+        "Request",
+        state.endpoint
+          ? state.endpoint.method + " " + state.endpoint.url +
+            (state.endpointGuessed
+              ? " (guessed, not yet seen on the homepage)"
+              : " (learned from the homepage)")
+          : "Not known yet"
+      );
+      addRow("Last checked from", state.lastSource || "Not yet");
+      addRow(
+        "Last result",
+        error
+          ? "Error: " + error
+          : result
+            ? JSON.stringify({ found: result.found, count: result.count })
+            : "None yet"
+      );
+      addRow(
+        "Last alert",
+        delivery
+          ? new Date(delivery.at).toLocaleTimeString() +
+            ": notification " + delivery.notification +
+            "; banner " + delivery.banner
+          : "None sent yet"
+      );
+      if (state.lastRaw) {
+        rows.appendChild(el("dt", null, "Compass's reply (start)"));
+        const dd = el("dd");
+        dd.appendChild(el("code", null, state.lastRaw));
+        rows.appendChild(dd);
+      }
+    }
+
+    checkBtn.addEventListener("click", function () {
+      checkBtn.disabled = true;
+      setButtonLabel(checkBtn, "hourglass", "Checking…");
+      sendToBackground({ type: "CT_WATCHER_CHECK_NOW" }).then(function (state) {
+        if (state) render(state);
+        setButtonLabel(checkBtn, "refresh", "Check now");
+        checkBtn.disabled = false;
+      });
+    });
+
+    reviewBtn.addEventListener("click", function () {
+      sendToBackground({ type: "CT_WATCHER_OPEN_NOTES" });
+      window.close();
+    });
+
+    testBtn.addEventListener("click", function () {
+      sendToBackground({ type: "CT_WATCHER_TEST_ALERT" }).then(function (state) {
+        if (state) render(state);
+      });
+    });
+
+    // Checks run in the background, so the panel follows the stored state.
+    chrome.storage.onChanged.addListener(function (changes, area) {
+      if (area === "local" && changes[key]) render(changes[key].newValue || {});
+    });
+
+    wrap.appendChild(status);
+    wrap.appendChild(checkedAt);
+    wrap.appendChild(buttons);
+    wrap.appendChild(details);
+
+    render({});
+    CompassToolkit.getData([key]).then(function (data) {
+      render(data[key] || {});
+    });
+    return wrap;
+  }
+
   /* ---------------- rows ---------------- */
 
   function buildPanel(feature) {
@@ -801,11 +1022,17 @@
       panel.appendChild(el("div", "panel-where", feature.where));
     }
 
+    if (feature.custom === "attendanceWatcher") {
+      panel.appendChild(buildWatcherPanel());
+    }
+
     feature.settings.forEach(function (setting) {
       if (setting.type === "toggle") {
         panel.appendChild(buildToggleSetting(feature, setting));
       } else if (setting.type === "select") {
         panel.appendChild(buildSelectSetting(feature, setting));
+      } else if (setting.type === "time") {
+        panel.appendChild(buildTimeSetting(feature, setting));
       } else if (setting.type === "list") {
         panel.appendChild(buildListSetting(feature, setting));
       }
