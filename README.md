@@ -1,6 +1,6 @@
 # Compass Toolkit
 
-Fourteen Compass improvements in one extension. Each can be turned on or off from
+Fifteen Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
@@ -423,3 +423,54 @@ Limits:
 - Changes to layers such as "Term Planner: Parents" are visible to families.
 - It can't change iCal-fed layers (for example School Holidays). Those change only
   in the source calendar.
+
+## Newsfeed Projector
+
+Shows your Compass newsfeed as a rotating display for the classroom projector.
+
+In the menu, open **Newsfeed Projector** and choose who the news is for:
+**Students & parents**, **Students only**, **Staff only** or **All news**. The display
+opens in its own window, so drag it onto the projector and press **F** for full screen.
+It reads the newsfeed through your normal Compass sign-in in this browser, so sign in to
+Compass first. No passwords are stored.
+
+**Students only** is **Students & parents** with anything sent only to parents (never to
+students) left out, for the rarer case where that matters on a screen students see.
+
+Move the mouse over the display for its controls. Keys: left and right arrows (or a
+presenter clicker) for previous and next, Space to pause, **F** for full screen,
+**R** to reload, and **1** to **4** for All news, Staff only, Students & parents and
+Students only. **This item is for** lets you re-label or hide a single item, and that is
+remembered on this computer.
+
+Each item's audience is worked out in this order:
+
+1. The item's own audience targets from Compass.
+2. If your account can't read those, Compass's "View newsfeed as" parent and student
+   (newsfeed admins).
+3. If neither works, the item is marked unchecked and is never shown in Students &
+   parents unless you label it or turn on **Show items whose audience couldn't be
+   checked**.
+
+**Check connection** in the panel shows which of these your account gets.
+
+- **Compass address**: your school's web address. The school's name on its own works
+  too. It starts as `https://tappingps-wa.compass.education`, so other schools need
+  to change it.
+- **Class year level**: in the Students & parents and Students only views, only show
+  news sent to this year level. Whole-school news is always shown.
+- **Default view**: what the display shows when it is opened without choosing. The
+  buttons above set this too.
+- **Newest items to rotate through**, **Skip items older than**, **Show priority
+  items first**: which items are shown. Zero days means no age limit.
+- **Seconds per item**, **Seconds per picture**, **Scrolling speed for long posts**:
+  how long each item stays up. Long posts scroll, and posts with several pictures
+  step through them.
+- **Check for new items every**, **Hide who posted each item**, **Show the time and
+  date**.
+
+While this feature is on, requests from the display and the menu to your school's
+Compass site have their Origin and Referer set to match that site, the way the Compass
+web page sends them, because some Compass endpoints are picky about where a request
+came from. Turn the feature off and that stops. The display's **Settings** button
+opens the toolkit menu.

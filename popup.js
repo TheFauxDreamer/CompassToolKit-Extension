@@ -178,6 +178,83 @@
     return wrap;
   }
 
+  function buildNumberSetting(feature, setting) {
+    const wrap = el("div", "sub-setting");
+    const row = el("div", "sub-row");
+
+    const text = el("div", "sub-text");
+    text.appendChild(el("div", "sub-label", setting.label));
+    if (setting.description) {
+      text.appendChild(el("div", "sub-desc", setting.description));
+    }
+
+    const input = document.createElement("input");
+    input.type = "number";
+    input.className = "sub-number";
+    input.min = setting.min;
+    input.max = setting.max;
+    input.setAttribute("aria-label", setting.label);
+    input.value = settings[feature.key][setting.key];
+    input.addEventListener("change", function () {
+      // Blank or nonsense falls back to the default, and anything outside the
+      // range is pulled back into it. Zero is a real answer where it is allowed.
+      const typed = input.value.trim() === "" ? NaN : Number(input.value);
+      const value = Math.max(
+        setting.min,
+        Math.min(setting.max, isNaN(typed) ? setting.default : typed)
+      );
+      input.value = value;
+      settings[feature.key][setting.key] = value;
+      save();
+    });
+
+    row.appendChild(text);
+    row.appendChild(input);
+    wrap.appendChild(row);
+    return wrap;
+  }
+
+  function buildTextSetting(feature, setting) {
+    const wrap = el("div", "sub-setting");
+    wrap.appendChild(el("div", "sub-label", setting.label));
+    if (setting.description) {
+      wrap.appendChild(el("div", "sub-desc", setting.description));
+    }
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "sub-input";
+    input.spellcheck = false;
+    input.placeholder = setting.placeholder || "";
+    input.setAttribute("aria-label", setting.label);
+    input.value = settings[feature.key][setting.key];
+
+    const problem = el("div", "sub-problem");
+    problem.hidden = true;
+
+    input.addEventListener("change", function () {
+      let value = input.value.trim();
+      if (setting.normalise === "schoolUrl") {
+        try {
+          value = CompassToolkit.normaliseSchoolUrl(value, setting.default);
+        } catch (e) {
+          problem.textContent = "That doesn't look like a web address.";
+          problem.hidden = false;
+          input.value = settings[feature.key][setting.key];
+          return;
+        }
+      }
+      problem.hidden = true;
+      input.value = value;
+      settings[feature.key][setting.key] = value;
+      save();
+    });
+
+    wrap.appendChild(input);
+    wrap.appendChild(problem);
+    return wrap;
+  }
+
   function buildListSetting(feature, setting) {
     const wrap = el("div", "sub-setting");
     wrap.appendChild(el("div", "sub-label", setting.label));
@@ -1048,6 +1125,265 @@
     return wrap;
   }
 
+  /* ---------------- newsfeed projector panels ---------------- */
+
+  const NEWSFEED_PAGE = "pages/newsfeed.html";
+  const NEWSFEED_CHOICES = [
+    {
+      aud: "community",
+      title: "Students & parents",
+      text: "Only news your class and families can already see in Compass"
+    },
+    {
+      aud: "students",
+      title: "Students only",
+      text: "Students & parents news, minus anything sent only to parents"
+    },
+    {
+      aud: "staff",
+      title: "Staff only",
+      text: "News that isn't shared with students or parents"
+    },
+    { aud: "all", title: "All news", text: "Everything in your Compass newsfeed" }
+  ];
+
+  /* The display page and this menu share one copy of the Compass code, loaded
+   * here only when it is needed. */
+  function loadNewsfeedCode() {
+    return import("./pages/newsfeed/compass.js");
+  }
+
+  function statusLine(className) {
+    const line = el("div", className || "status");
+    line.hidden = true;
+    return line;
+  }
+
+  function setLine(line, message, kind, iconName) {
+    line.className = "status" + (kind ? " " + kind : "");
+    line.hidden = !message;
+    line.innerHTML = "";
+    if (!message) return;
+    if (iconName) line.appendChild(CompassToolkitIcons.create(iconName, 13));
+    line.appendChild(el("span", null, message));
+  }
+
+  /* What the original toolbar popup did: pick who the news is for and open the
+   * display, and say which year level it is for. */
+  function buildNewsfeedOpenPanel(feature) {
+    const parts = document.createDocumentFragment();
+
+    const open = el("div", "sub-setting");
+    open.appendChild(el("div", "sub-label", "Put the news on the projector"));
+    open.appendChild(
+      el(
+        "div",
+        "sub-desc",
+        "Opens the display in its own window. Move the mouse over it for the controls, and press F for full screen."
+      )
+    );
+    NEWSFEED_CHOICES.forEach(function (choice) {
+      const button = el("button", "choice");
+      button.type = "button";
+      button.appendChild(el("strong", null, choice.title));
+      button.appendChild(el("span", null, choice.text));
+      button.addEventListener("click", function () {
+        // Remembered as the default view, as it always was.
+        settings[feature.key].audience = choice.aud;
+        save().then(function () {
+          chrome.windows.create({
+            url: chrome.runtime.getURL(NEWSFEED_PAGE + "?audience=" + choice.aud)
+          });
+          window.close();
+        });
+      });
+      open.appendChild(button);
+    });
+    parts.appendChild(open);
+
+    const level = el("div", "sub-setting");
+    const row = el("div", "sub-row");
+    const text = el("div", "sub-text");
+    text.appendChild(el("div", "sub-label", "Class year level"));
+    text.appendChild(
+      el(
+        "div",
+        "sub-desc",
+        "In the Students & parents view, only show news sent to this year level. Whole-school news is always shown."
+      )
+    );
+    const select = document.createElement("select");
+    select.className = "sub-select";
+    select.setAttribute("aria-label", "Class year level");
+    select.appendChild(new Option("All year levels", "any"));
+    select.addEventListener("change", function () {
+      settings[feature.key].yearLevel = select.value;
+      save();
+    });
+    row.appendChild(text);
+    row.appendChild(select);
+    level.appendChild(row);
+    parts.appendChild(level);
+
+    // The list comes from Compass itself, so it is only there once signed in.
+    function fillYearLevels() {
+      select.length = 1;
+      loadNewsfeedCode()
+        .then(function (code) {
+          return new code.CompassClient(settings[feature.key].schoolUrl).getYearLevels();
+        })
+        .then(function (levels) {
+          levels.forEach(function (y) {
+            select.add(new Option(y.name, String(y.id)));
+          });
+        })
+        .catch(function () {
+          /* not signed in yet: "All year levels" still works */
+        })
+        .then(function () {
+          select.value = String(settings[feature.key].yearLevel);
+          if (select.value === "") select.value = "any";
+        });
+    }
+    fillYearLevels();
+
+    // A different school means different year levels, and what was worked out
+    // about each item belongs to the old one.
+    let address = settings[feature.key].schoolUrl;
+    chrome.storage.onChanged.addListener(function (changes, area) {
+      const change = changes[CompassToolkit.SETTINGS_KEY];
+      if (area !== "sync" || !change) return;
+      const next = CompassToolkit.withDefaults(change.newValue)[feature.key].schoolUrl;
+      if (next === address) return;
+      address = next;
+      loadNewsfeedCode()
+        .then(function (code) {
+          return code.clearAudienceCache();
+        })
+        .then(fillYearLevels);
+    });
+
+    return parts;
+  }
+
+  /* What the original settings page had beyond the plain settings: checking
+   * the connection, and the items re-labelled from the display. */
+  function buildNewsfeedTools(feature) {
+    const overridesKey = CompassToolkit.DATA_KEYS.newsfeedOverrides;
+    const parts = document.createDocumentFragment();
+
+    const connection = el("div", "sub-setting");
+    connection.appendChild(el("div", "sub-label", "Connection"));
+    connection.appendChild(
+      el(
+        "div",
+        "sub-desc",
+        "The display uses your normal Compass sign-in in this browser. No passwords are stored."
+      )
+    );
+    const testBtn = iconButton("btn block", "refresh", "Check connection");
+    const result = statusLine();
+    connection.appendChild(testBtn);
+    connection.appendChild(result);
+    parts.appendChild(connection);
+
+    testBtn.addEventListener("click", async function () {
+      testBtn.disabled = true;
+      setLine(result, "Checking…", "");
+      try {
+        const code = await loadNewsfeedCode();
+        const client = new code.CompassClient(settings[feature.key].schoolUrl);
+        try {
+          const items = await client.getFeed({ maxItems: 5 });
+          if (!items.length) {
+            setLine(result, "Signed in, but your newsfeed is empty.", "success", "check");
+            return;
+          }
+          await code.clearAudienceCache();
+          const audiences = await client.getAudiences(items);
+          const sources = new Set(
+            Array.from(audiences.values()).map(function (a) {
+              return a.source;
+            })
+          );
+          if (sources.has("targets")) {
+            setLine(result, "Connected. Each item's audience is read from Compass.", "success", "check");
+          } else if (sources.has("view-as")) {
+            setLine(
+              result,
+              "Connected. Audiences are worked out using Compass's \"View newsfeed as\".",
+              "success",
+              "check"
+            );
+          } else {
+            setLine(
+              result,
+              "Connected, but Compass won't say who items are for with your account. Staff and Students & parents views will be empty unless you re-label items on the display.",
+              "error",
+              "alert"
+            );
+          }
+        } catch (e) {
+          setLine(
+            result,
+            e instanceof code.NotSignedInError
+              ? "Not signed in. Sign in to Compass in this browser, then check again."
+              : e.message,
+            "error",
+            "alert"
+          );
+        }
+      } finally {
+        testBtn.disabled = false;
+      }
+    });
+
+    const changes = el("div", "sub-setting");
+    changes.appendChild(el("div", "sub-label", "Your changes"));
+    const count = el("div", "sub-desc");
+    changes.appendChild(count);
+    const resetBtn = iconButton("btn secondary block", "trash", "Reset items I've re-labelled");
+    const recheckBtn = iconButton("btn secondary block", "refresh", "Re-check every item's audience");
+    const note = statusLine();
+    changes.appendChild(resetBtn);
+    changes.appendChild(recheckBtn);
+    changes.appendChild(note);
+    parts.appendChild(changes);
+
+    function showCount() {
+      CompassToolkit.getData([overridesKey]).then(function (data) {
+        const n = Object.keys(data[overridesKey] || {}).length;
+        count.textContent = n
+          ? "You've re-labelled " + plural(n, "item") + " from the display's controls."
+          : "Items you re-label from the display's controls are remembered here.";
+      });
+    }
+
+    resetBtn.addEventListener("click", function () {
+      chrome.storage.local.remove(overridesKey, function () {
+        showCount();
+        setLine(note, "Re-labelled items reset", "success", "check");
+      });
+    });
+
+    recheckBtn.addEventListener("click", function () {
+      loadNewsfeedCode()
+        .then(function (code) {
+          return code.clearAudienceCache();
+        })
+        .then(function () {
+          setLine(note, "Audiences will be checked again on the next reload", "success", "check");
+        });
+    });
+
+    showCount();
+    return parts;
+  }
+
+  function plural(n, word) {
+    return n + " " + word + (n === 1 ? "" : "s");
+  }
+
   /* ---------------- rows ---------------- */
 
   function buildPanel(feature) {
@@ -1063,6 +1399,10 @@
       panel.appendChild(buildWatcherPanel());
     }
 
+    if (feature.custom === "newsfeed") {
+      panel.appendChild(buildNewsfeedOpenPanel(feature));
+    }
+
     feature.settings.forEach(function (setting) {
       if (setting.type === "toggle") {
         panel.appendChild(buildToggleSetting(feature, setting));
@@ -1070,6 +1410,10 @@
         panel.appendChild(buildSelectSetting(feature, setting));
       } else if (setting.type === "time") {
         panel.appendChild(buildTimeSetting(feature, setting));
+      } else if (setting.type === "number") {
+        panel.appendChild(buildNumberSetting(feature, setting));
+      } else if (setting.type === "text") {
+        panel.appendChild(buildTextSetting(feature, setting));
       } else if (setting.type === "list") {
         panel.appendChild(buildListSetting(feature, setting));
       }
@@ -1089,6 +1433,10 @@
 
     if (feature.custom === "quickAdd") {
       panel.appendChild(buildQuickAddPanel());
+    }
+
+    if (feature.custom === "newsfeed") {
+      panel.appendChild(buildNewsfeedTools(feature));
     }
 
     return panel;

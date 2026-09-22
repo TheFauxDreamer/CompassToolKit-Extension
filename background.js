@@ -3,14 +3,16 @@
  * Most features run in content scripts and read their own settings, and
  * captured data goes straight to chrome.storage, so there is little to do
  * here. This seeds the defaults on install so the popup opens with real values
- * rather than an empty object, and loads the Attendance Note Watcher, the one
- * feature that works in the background.
+ * rather than an empty object, and loads the two features that work in the
+ * background: the Attendance Note Watcher and the Newsfeed Projector's request
+ * headers.
  */
 
 importScripts(
   "src/shared/settings.js",
   "src/shared/alerts.js",
-  "src/background/attendance-watcher.js"
+  "src/background/attendance-watcher.js",
+  "src/background/newsfeed-headers.js"
 );
 
 chrome.runtime.onInstalled.addListener(function (details) {

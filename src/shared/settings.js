@@ -505,6 +505,131 @@ var CompassToolkit = (function () {
       where: "Opens in its own window, through a signed-in Compass tab",
       custom: "quickAdd",
       settings: []
+    },
+    {
+      key: "newsfeedProjector",
+      /* The display's own noticeboard teal, so the menu row and the window it
+       * opens read as one thing. */
+      colour: { base: "#0f4a55", strong: "#0b3942", soft: "#e2eef0" },
+      name: "Newsfeed Projector",
+      version: "1.0.5",
+      icon: "monitor",
+      description:
+        "Shows your school's Compass newsfeed as a rotating display for the classroom projector.",
+      where: "Opens in its own window, through your Compass sign-in",
+      custom: "newsfeed",
+      settings: [
+        {
+          key: "schoolUrl",
+          type: "text",
+          normalise: "schoolUrl",
+          label: "Compass address",
+          description:
+            "Your school's Compass web address. Just the school's name works too.",
+          placeholder: "https://yourschool.compass.education",
+          default: "https://tappingps-wa.compass.education"
+        },
+        {
+          key: "audience",
+          type: "select",
+          label: "Default view",
+          description:
+            "What the display shows when it is opened without choosing. The buttons above set this too.",
+          options: [
+            { value: "community", label: "Students & parents" },
+            { value: "students", label: "Students only" },
+            { value: "staff", label: "Staff only" },
+            { value: "all", label: "All news" }
+          ],
+          default: "community"
+        },
+        {
+          key: "includeUnknown",
+          type: "toggle",
+          label: "Show items whose audience couldn't be checked",
+          description: "In the Students & parents and Students only views.",
+          default: false
+        },
+        {
+          key: "maxItems",
+          type: "number",
+          label: "Newest items to rotate through",
+          min: 1,
+          max: 60,
+          default: 20
+        },
+        {
+          key: "maxAgeDays",
+          type: "number",
+          label: "Skip items older than (days)",
+          description: "0 means no limit.",
+          min: 0,
+          max: 365,
+          default: 21
+        },
+        {
+          key: "priorityFirst",
+          type: "toggle",
+          label: "Show priority items first",
+          default: true
+        },
+        {
+          key: "slideSeconds",
+          type: "number",
+          label: "Seconds per item",
+          min: 5,
+          max: 300,
+          default: 15
+        },
+        {
+          key: "imageSeconds",
+          type: "number",
+          label: "Seconds per picture",
+          description: "For posts with several pictures.",
+          min: 3,
+          max: 120,
+          default: 8
+        },
+        {
+          key: "scrollSpeed",
+          type: "select",
+          label: "Scrolling speed for long posts",
+          options: [
+            { value: "slow", label: "Slow" },
+            { value: "medium", label: "Medium" },
+            { value: "fast", label: "Fast" }
+          ],
+          default: "slow"
+        },
+        {
+          key: "refreshMinutes",
+          type: "number",
+          label: "Check for new items every (minutes)",
+          min: 1,
+          max: 120,
+          default: 10
+        },
+        {
+          key: "hideAuthor",
+          type: "toggle",
+          label: "Hide who posted each item",
+          description: "Leaves out the name of the staff member who posted it.",
+          default: true
+        },
+        {
+          key: "showClock",
+          type: "toggle",
+          label: "Show the time and date",
+          default: true
+        },
+        {
+          /* The class year level, chosen from a list read from Compass, so the
+           * panel draws it itself. */
+          key: "yearLevel",
+          type: "data",
+          default: "any"
+        }
+      ]
     }
   ];
 
@@ -782,11 +907,16 @@ var CompassToolkit = (function () {
   }
 
   /* Keys used for data kept on this device (chrome.storage.local): what is
-   * captured off Compass pages, the Attendance Note Watcher's own state, and
-   * the calendar Calendar Quick Add last used. */
+   * captured off Compass pages, the Attendance Note Watcher's own state, the
+   * calendar Calendar Quick Add last used, and what the Newsfeed Projector has
+   * worked out about each item. */
   const DATA_KEYS = {
     watcher: "watcher.state",
     quickAddLayer: "quickAdd.lastLayer",
+    newsfeedOverrides: "newsfeed.overrides",
+    newsfeedAudiences: "newsfeed.audiences",
+    newsfeedGroups: "newsfeed.customGroups",
+    newsfeedYearLevels: "newsfeed.yearLevels",
     periods: "capture.periodsData",
     events: "capture.eventsData",
     student: "capture.studentInfo",
@@ -839,6 +969,24 @@ var CompassToolkit = (function () {
     fn();
   }
 
+  /* Accepts "tappingps-wa", "tappingps-wa.compass.education" or a full address
+   * and gives back https://host. Blank gives the fallback; anything that isn't
+   * an address throws. Chrome's URL parser lets odd hostnames through (spaces
+   * come out percent-encoded), so the name is checked as well. */
+  function normaliseSchoolUrl(input, fallback) {
+    let s = String(input || "").trim();
+    if (!s) return fallback;
+    if (!/^https?:\/\//i.test(s)) {
+      if (!s.includes(".")) s = s + ".compass.education";
+      s = "https://" + s;
+    }
+    const host = new URL(s).hostname;
+    if (!/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$/i.test(host)) {
+      throw new Error("Not a web address");
+    }
+    return "https://" + host;
+  }
+
   return {
     SETTINGS_KEY: SETTINGS_KEY,
     FEATURES: FEATURES,
@@ -859,6 +1007,7 @@ var CompassToolkit = (function () {
     getData: getData,
     setData: setData,
     isTopFrame: isTopFrame,
-    whenReady: whenReady
+    whenReady: whenReady,
+    normaliseSchoolUrl: normaliseSchoolUrl
   };
 })();

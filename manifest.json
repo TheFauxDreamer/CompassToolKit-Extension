@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Compass Toolkit",
-  "version": "1.10.0",
-  "description": "A set of Compass improvements in one extension: timetable printing, clearance forms, term calendars, chronicle snippets, directory filtering, fewer new tabs, attendance note alerts and quick calendar entry.",
+  "version": "1.11.0",
+  "description": "A set of Compass improvements in one extension: timetable printing, clearance forms, term calendars, chronicle snippets, directory filtering, fewer new tabs, attendance note alerts, quick calendar entry and a newsfeed projector.",
   "permissions": [
     "storage",
     "alarms",
     "notifications",
-    "scripting"
+    "scripting",
+    "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
     "*://*.compass.education/*"

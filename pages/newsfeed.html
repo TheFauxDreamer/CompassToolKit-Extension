@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Newsfeed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="newsfeed.css">
+  <link rel="icon" href="../icons/icon32.png">
+</head>
+<body>
+  <header class="top">
+    <div class="where">
+      <span class="feed-name">School news</span>
+      <span class="audience-pill" id="audiencePill"></span>
+    </div>
+    <div class="clock" id="clock" aria-live="off"></div>
+  </header>
+
+  <main class="stage" id="stage" aria-live="polite"></main>
+
+  <footer class="bottom">
+    <div class="progress" id="progress" aria-hidden="true"></div>
+  </footer>
+
+  <div class="controls" id="controls" role="toolbar" aria-label="Display controls">
+    <div class="seg" role="radiogroup" aria-label="Which news to show">
+      <button data-aud="all" role="radio">All news</button>
+      <button data-aud="staff" role="radio">Staff only</button>
+      <button data-aud="community" role="radio">Students &amp; parents</button>
+      <button data-aud="students" role="radio">Students only</button>
+    </div>
+    <div class="group">
+      <button id="prevBtn" title="Previous (←)">Previous</button>
+      <button id="pauseBtn" title="Pause (Space)">Pause</button>
+      <button id="nextBtn" title="Next (→)">Next</button>
+    </div>
+    <div class="group">
+      <label class="override">This item is for
+        <select id="overrideSel" title="Change who this item is shown to on this display">
+          <option value="">Compass audience</option>
+          <option value="community">Students &amp; parents</option>
+          <option value="staff">Staff only</option>
+          <option value="hidden">Never show</option>
+        </select>
+      </label>
+    </div>
+    <div class="group">
+      <button id="refreshBtn" title="Reload news (R)">Reload</button>
+      <button id="fsBtn" title="Full screen (F)">Full screen</button>
+      <button id="settingsBtn" title="Settings">Settings</button>
+    </div>
+  </div>
+
+  <template id="slideTpl">
+    <article class="sheet">
+      <div class="tape" hidden>Important</div>
+      <div class="sheet-body">
+        <div class="text">
+          <h1 class="title"></h1>
+          <p class="meta"></p>
+          <div class="content"></div>
+          <p class="files" hidden></p>
+        </div>
+        <figure class="media" hidden></figure>
+      </div>
+    </article>
+  </template>
+
+  <script src="../src/shared/settings.js"></script>
+  <script type="module" src="newsfeed.js"></script>
+</body>
+</html>

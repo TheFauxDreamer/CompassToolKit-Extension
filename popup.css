@@ -392,9 +392,10 @@ input[type="text"]:focus {
 }
 
 .sub-select,
-.sub-time {
+.sub-time,
+.sub-number {
   flex-shrink: 0;
-  max-width: 130px;
+  max-width: 150px;
   margin-top: 1px;
   padding: 4px 6px;
   font: inherit;
@@ -407,9 +408,28 @@ input[type="text"]:focus {
 }
 
 .sub-select:focus,
-.sub-time:focus {
+.sub-time:focus,
+.sub-number:focus {
   outline: none;
   border-color: var(--accent);
+}
+
+/* Numbers are short, so they get a narrow box. */
+.sub-number {
+  width: 76px;
+}
+
+/* A wide value, such as a web address, sits under its label instead of beside it. */
+.sub-input {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.sub-problem {
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--danger);
 }
 
 /* ---------------- menu entries ---------------- */
@@ -773,6 +793,42 @@ textarea:focus {
   margin-top: 5px;
   font-size: 10.5px;
   color: var(--text-faint);
+}
+
+/* ---------------- newsfeed projector ---------------- */
+
+.choice {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  margin-top: 7px;
+  padding: 8px 10px 8px 12px;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.choice:hover {
+  background: var(--accent-soft);
+}
+
+.choice:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.choice strong {
+  font-size: 12.5px;
+}
+
+.choice span {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
 /* ---------------- footer ---------------- */
