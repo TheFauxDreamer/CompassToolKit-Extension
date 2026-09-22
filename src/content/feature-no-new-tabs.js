@@ -4,6 +4,11 @@
  * litters the window with tabs. This strips that attribute, with two
  * exceptions the user can turn off: the School Favourites menu (which links
  * out to other systems) and links inside posts.
+ *
+ * The newer homepage panels are React cards with no link to strip: they reach
+ * their page through window.open, which only the page's own world can see, so
+ * that half of this feature lives in src/page/no-new-tabs.js and is told from
+ * here whether it is on.
  */
 (function () {
   "use strict";
@@ -104,8 +109,27 @@
     }
   }
 
+  /* ---------------- the page's own world ---------------- */
+
+  /* What the cards do on click is the page's own code, so the window.open
+   * half of this feature runs there and is told from here whether it is on.
+   * It is sent on every settings change, so turning the feature off takes
+   * effect without a reload, the same as stripping targets does. */
+  function sendSameTab() {
+    window.dispatchEvent(
+      new CustomEvent("compassToolkitNoNewTabs", {
+        detail: { sameTab: !!(config && config.enabled) }
+      })
+    );
+  }
+
+  // Both scripts start at document_start, so the page side may have missed
+  // the first send. It asks until it hears back.
+  window.addEventListener("compassToolkitNoNewTabsRequest", sendSameTab);
+
   CompassToolkit.observeFeature(FEATURE, function (settings) {
     config = settings;
+    sendSameTab();
     CompassToolkit.whenReady(function () {
       if (!config.enabled) {
         stopObserver();

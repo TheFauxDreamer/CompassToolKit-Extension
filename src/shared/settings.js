@@ -160,6 +160,7 @@ var CompassToolkit = (function () {
       name: "Term Calendar Printer",
       version: "1.7",
       icon: "calendar",
+      defaultEnabled: false,
       description:
         "Captures the whole-term calendar view and opens it as a printable page.",
       where: "Calendar page, Term view",
@@ -172,6 +173,7 @@ var CompassToolkit = (function () {
       name: "Preferred Calendar View",
       version: "1.2",
       icon: "layout",
+      defaultEnabled: false,
       description:
         "Opens the calendar on the view you use, and starts its weeks on Monday.",
       where: "Calendar page",
@@ -257,6 +259,7 @@ var CompassToolkit = (function () {
       name: "Chronicle Snippets",
       version: "1.0.1",
       icon: "fileText",
+      defaultEnabled: false,
       description:
         "Pre-written wording, offered from a button inside the chronicle entry form.",
       where: "Chronicle entry form, wherever it opens",
@@ -295,6 +298,7 @@ var CompassToolkit = (function () {
       name: "Clean Staff Directory",
       version: "1.1",
       icon: "filter",
+      defaultEnabled: false,
       description:
         "Hides system and support accounts from the staff directory.",
       where: "Staff directory",
@@ -324,6 +328,7 @@ var CompassToolkit = (function () {
       name: "Staff Card Printer",
       version: "1.0",
       icon: "idCard",
+      defaultEnabled: false,
       description:
         "Builds a printable page of the staff cards themselves, photos and all.",
       where: "Staff directory",
@@ -342,7 +347,7 @@ var CompassToolkit = (function () {
       key: "noNewTabs",
       colour: { base: "#c62828", strong: "#a11f1f", soft: "#fbeaea" },
       name: "No New Tabs",
-      version: "1.2",
+      version: "1.3",
       icon: "link",
       description:
         "Stops Compass opening a new tab every time you click something.",
@@ -503,6 +508,7 @@ var CompassToolkit = (function () {
       name: "Calendar Quick Add",
       version: "1.5.1",
       icon: "calendarPlus",
+      defaultEnabled: false,
       description:
         "Add, change and delete calendar items, including repeating items, staff birthdays and rows pasted from a spreadsheet.",
       where: "Opens in its own window, through a signed-in Compass tab",
@@ -517,6 +523,7 @@ var CompassToolkit = (function () {
       name: "Newsfeed Projector",
       version: "1.1.0",
       icon: "monitor",
+      defaultEnabled: false,
       description:
         "Shows your school's Compass newsfeed as a rotating display for the classroom projector.",
       where: "Opens in its own window, through your Compass sign-in",

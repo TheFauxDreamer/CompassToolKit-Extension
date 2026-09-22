@@ -4,8 +4,10 @@ Fifteen Compass improvements in one extension. Each can be turned on or off from
 the menu on the toolbar icon, along with its own settings. Switching something
 on or off takes effect straight away on any Compass tab you already have open.
 
-Everything is on by default except **Chronicle Anywhere** and **Hide Support
-Button**, which start off.
+Six start on: **Timetable Printer**, **Clearance Form**, **No New Tabs**,
+**Menu Declutter**, **Quick Attendance Notes** and **Attendance Note Watcher**.
+The rest start off, so the menu is short to begin with and you turn on what you
+want as you go.
 
 Each feature has its own colour in the menu, so the rows can be told apart at a
 glance: the icon, the switch and a stripe down the edge all take it, and the
@@ -39,6 +41,8 @@ The button never appears on staff profiles.
 
 ## Term Calendar Printer
 
+*Off by default. Turn it on in the menu.*
+
 Captures a whole term from the Compass calendar and opens it as a printable
 page.
 
@@ -64,6 +68,8 @@ and lets you:
 - adjust the event text size to fit more on the page
 
 ## Preferred Calendar View
+
+*Off by default. Turn it on in the menu.*
 
 Compass always opens the calendar on **Week** view. This switches it to the
 view you actually use as the page loads.
@@ -123,6 +129,8 @@ Button** on there's no bubble to avoid, so it sits flush in the corner.
 
 ## Chronicle Snippets
 
+*Off by default. Turn it on in the menu.*
+
 The same chronicle entries get written over and over, so this offers pre-written
 wording from a small **Snippets** button inside the entry form's own fields.
 Pick one and its text drops into that field. Compass saves the entry exactly as
@@ -162,6 +170,8 @@ so rather than losing the snippet.
 
 ## Clean Staff Directory
 
+*Off by default. Turn it on in the menu.*
+
 Hides system and support accounts from the staff directory so you only see real
 people.
 
@@ -196,6 +206,8 @@ becomes **Showing all 100 (34 hidden)**. Searching or sorting still works; the
 list is rebuilt behind you when it does.
 
 ## Staff Card Printer
+
+*Off by default. Turn it on in the menu.*
 
 Compass's own **Download PDF** on the staff directory gives you a list of names
 and details. This prints the cards themselves, photo and all, which is what is
@@ -239,6 +251,13 @@ Stops Compass opening a new tab every time you click something.
   menu, and the Outlook link, still open in a new tab.
 - **Open links inside posts in a new tab**: links in news feed posts and rich
   text open in a new tab so you don't lose your place in the feed.
+
+The customisable homepage needs more than that. Its Favourite Modules tiles are
+cards with no link in them at all, so there is no target to strip: they open
+their page by asking the browser for a new window. Those are caught separately
+and sent to the tab you are already in, as long as the page they are opening is
+on Compass itself. Anything pointing off Compass, and any window Compass asks
+for at a set size, is left as it was.
 
 Turn the whole feature off and every link goes back to behaving the way Compass
 intended.
@@ -349,6 +368,8 @@ notifications, which is why the extension asks for those permissions.
 
 ## Calendar Quick Add
 
+*Off by default. Turn it on in the menu.*
+
 Adds, changes and deletes items on a Compass calendar layer (for example a staff
 term planner), including repeating items, staff birthdays and rows pasted from a
 spreadsheet.
@@ -425,6 +446,8 @@ Limits:
   in the source calendar.
 
 ## Newsfeed Projector
+
+*Off by default. Turn it on in the menu.*
 
 Shows your Compass newsfeed as a rotating display for the classroom projector.
 
