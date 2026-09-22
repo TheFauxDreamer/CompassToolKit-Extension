@@ -101,7 +101,10 @@ var CompassToolkit = (function () {
 
   /* The single source of truth: each feature, its sub-settings, and the
    * labels the popup renders. `default` on a sub-setting also defines the
-   * value features fall back to when nothing is stored. */
+   * value features fall back to when nothing is stored. A sub-setting with
+   * `location: "display"` is skipped by the popup's own generic rendering,
+   * because the Newsfeed Projector renders those itself, in a settings menu
+   * inside the projection window rather than the toolkit popup. */
   const FEATURES = [
     {
       key: "timetablePrinter",
@@ -512,7 +515,7 @@ var CompassToolkit = (function () {
        * opens read as one thing. */
       colour: { base: "#0f4a55", strong: "#0b3942", soft: "#e2eef0" },
       name: "Newsfeed Projector",
-      version: "1.0.5",
+      version: "1.1.0",
       icon: "monitor",
       description:
         "Shows your school's Compass newsfeed as a rotating display for the classroom projector.",
@@ -532,9 +535,10 @@ var CompassToolkit = (function () {
         {
           key: "audience",
           type: "select",
+          location: "display",
           label: "Default view",
           description:
-            "What the display shows when it is opened without choosing. The buttons above set this too.",
+            "Used when the display is opened without a view already chosen, for example from a bookmark or shortcut rather than the Compass Toolkit menu.",
           options: [
             { value: "community", label: "Students & parents" },
             { value: "students", label: "Students only" },
@@ -546,6 +550,7 @@ var CompassToolkit = (function () {
         {
           key: "includeUnknown",
           type: "toggle",
+          location: "display",
           label: "Show items whose audience couldn't be checked",
           description: "In the Students & parents and Students only views.",
           default: false
@@ -553,6 +558,7 @@ var CompassToolkit = (function () {
         {
           key: "maxItems",
           type: "number",
+          location: "display",
           label: "Newest items to rotate through",
           min: 1,
           max: 60,
@@ -561,6 +567,7 @@ var CompassToolkit = (function () {
         {
           key: "maxAgeDays",
           type: "number",
+          location: "display",
           label: "Skip items older than (days)",
           description: "0 means no limit.",
           min: 0,
@@ -570,12 +577,14 @@ var CompassToolkit = (function () {
         {
           key: "priorityFirst",
           type: "toggle",
+          location: "display",
           label: "Show priority items first",
           default: true
         },
         {
           key: "slideSeconds",
           type: "number",
+          location: "display",
           label: "Seconds per item",
           min: 5,
           max: 300,
@@ -584,6 +593,7 @@ var CompassToolkit = (function () {
         {
           key: "imageSeconds",
           type: "number",
+          location: "display",
           label: "Seconds per picture",
           description: "For posts with several pictures.",
           min: 3,
@@ -593,6 +603,7 @@ var CompassToolkit = (function () {
         {
           key: "scrollSpeed",
           type: "select",
+          location: "display",
           label: "Scrolling speed for long posts",
           options: [
             { value: "slow", label: "Slow" },
@@ -604,6 +615,7 @@ var CompassToolkit = (function () {
         {
           key: "refreshMinutes",
           type: "number",
+          location: "display",
           label: "Check for new items every (minutes)",
           min: 1,
           max: 120,
@@ -612,6 +624,7 @@ var CompassToolkit = (function () {
         {
           key: "hideAuthor",
           type: "toggle",
+          location: "display",
           label: "Hide who posted each item",
           description: "Leaves out the name of the staff member who posted it.",
           default: true
@@ -619,14 +632,16 @@ var CompassToolkit = (function () {
         {
           key: "showClock",
           type: "toggle",
+          location: "display",
           label: "Show the time and date",
           default: true
         },
         {
           /* The class year level, chosen from a list read from Compass, so the
-           * panel draws it itself. */
+           * projection window's own settings menu draws it itself. */
           key: "yearLevel",
           type: "data",
+          location: "display",
           default: "any"
         }
       ]

@@ -1168,8 +1168,10 @@
     line.appendChild(el("span", null, message));
   }
 
-  /* What the original toolbar popup did: pick who the news is for and open the
-   * display, and say which year level it is for. */
+  /* Pick who the news is for and open the display. Everything else about how
+   * it looks and behaves day to day (year level, timing, what counts as
+   * "recent", and so on) is in the projection window's own settings menu, not
+   * here, so this panel stays short. */
   function buildNewsfeedOpenPanel(feature) {
     const parts = document.createDocumentFragment();
 
@@ -1179,7 +1181,7 @@
       el(
         "div",
         "sub-desc",
-        "Opens the display in its own window. Move the mouse over it for the controls, and press F for full screen."
+        "Opens the display in its own window and remembers your choice as what it opens to next time. Move the mouse over it for its own settings and controls, and press F for full screen."
       )
     );
     NEWSFEED_CHOICES.forEach(function (choice) {
@@ -1200,68 +1202,6 @@
       open.appendChild(button);
     });
     parts.appendChild(open);
-
-    const level = el("div", "sub-setting");
-    const row = el("div", "sub-row");
-    const text = el("div", "sub-text");
-    text.appendChild(el("div", "sub-label", "Class year level"));
-    text.appendChild(
-      el(
-        "div",
-        "sub-desc",
-        "In the Students & parents view, only show news sent to this year level. Whole-school news is always shown."
-      )
-    );
-    const select = document.createElement("select");
-    select.className = "sub-select";
-    select.setAttribute("aria-label", "Class year level");
-    select.appendChild(new Option("All year levels", "any"));
-    select.addEventListener("change", function () {
-      settings[feature.key].yearLevel = select.value;
-      save();
-    });
-    row.appendChild(text);
-    row.appendChild(select);
-    level.appendChild(row);
-    parts.appendChild(level);
-
-    // The list comes from Compass itself, so it is only there once signed in.
-    function fillYearLevels() {
-      select.length = 1;
-      loadNewsfeedCode()
-        .then(function (code) {
-          return new code.CompassClient(settings[feature.key].schoolUrl).getYearLevels();
-        })
-        .then(function (levels) {
-          levels.forEach(function (y) {
-            select.add(new Option(y.name, String(y.id)));
-          });
-        })
-        .catch(function () {
-          /* not signed in yet: "All year levels" still works */
-        })
-        .then(function () {
-          select.value = String(settings[feature.key].yearLevel);
-          if (select.value === "") select.value = "any";
-        });
-    }
-    fillYearLevels();
-
-    // A different school means different year levels, and what was worked out
-    // about each item belongs to the old one.
-    let address = settings[feature.key].schoolUrl;
-    chrome.storage.onChanged.addListener(function (changes, area) {
-      const change = changes[CompassToolkit.SETTINGS_KEY];
-      if (area !== "sync" || !change) return;
-      const next = CompassToolkit.withDefaults(change.newValue)[feature.key].schoolUrl;
-      if (next === address) return;
-      address = next;
-      loadNewsfeedCode()
-        .then(function (code) {
-          return code.clearAudienceCache();
-        })
-        .then(fillYearLevels);
-    });
 
     return parts;
   }
@@ -1404,6 +1344,8 @@
     }
 
     feature.settings.forEach(function (setting) {
+      // Rendered in the projection window's own settings menu instead, not here.
+      if (setting.location === "display") return;
       if (setting.type === "toggle") {
         panel.appendChild(buildToggleSetting(feature, setting));
       } else if (setting.type === "select") {

@@ -5,6 +5,7 @@ import { sanitizeHtml } from "./newsfeed/sanitize.js";
 const $ = (id) => document.getElementById(id);
 const stage = $("stage");
 const progress = $("progress");
+const settingsModal = $("settingsModal");
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 const state = {
@@ -40,6 +41,7 @@ async function init() {
   if (aud && AUDIENCE_LABELS[aud]) state.settings.audience = aud;
   state.client = new CompassClient(state.settings.schoolUrl);
   bindControls();
+  bindSettingsModal();
   startClock();
   updateAudienceUi();
   await load({ first: true });
@@ -77,7 +79,9 @@ async function load({ first = false } = {}) {
       }
       showStatus("The news couldn't be loaded", `${e.message} This screen tries again in 20 seconds.`,
         [{ label: "Try again", onClick: () => load({ first: true }) },
-         { label: "Settings", secondary: true, onClick: () => openSettings() }]);
+         // Likely an address or connection problem, so this leads to the toolkit's own
+         // settings rather than the display's, which doesn't have the Compass address.
+         { label: "Settings", secondary: true, onClick: (e) => openSettings(e.currentTarget) }]);
     }
     state.retryTimer = setTimeout(() => load({ first: true }), 20000);
   }
@@ -118,7 +122,7 @@ function showEmpty() {
     showStatus("No checked news to show",
       `Compass didn't say who ${unknown} item${unknown === 1 ? " is" : "s are"} for, so ${unknown === 1 ? "it's" : "they're"} hidden to be safe. Switch to All news and use "This item is for" to label them.`,
       [{ label: "Show all news", onClick: () => setAudience("all") },
-       { label: "Settings", secondary: true, onClick: () => openSettings() }]);
+       { label: "Settings", secondary: true, onClick: () => openLocalSettings() }]);
     return;
   }
   const other = aud === "community" || aud === "students" ? "Staff only or All news" : "another view";
@@ -127,7 +131,7 @@ function showEmpty() {
     : `There's nothing for ${AUDIENCE_LABELS[aud].toLowerCase()} right now. Try ${other}, or allow older items in Settings.`;
   showStatus("No news to show", msg, [
     { label: "Reload", onClick: () => load({ first: true }) },
-    { label: "Settings", secondary: true, onClick: () => openSettings() }
+    { label: "Settings", secondary: true, onClick: () => openLocalSettings() }
   ]);
 }
 
@@ -359,6 +363,9 @@ function bindControls() {
   };
   document.addEventListener("mousemove", reveal);
   document.addEventListener("keydown", (e) => {
+    // The dialog has its own form controls (typing into a number field, Space on a
+    // toggle), which these shortcuts would otherwise steal or interfere with.
+    if (settingsModal.open) return;
     if (e.target.tagName === "SELECT") return;
     switch (e.key) {
       case "ArrowRight": case "PageDown": next(); break;
@@ -379,7 +386,7 @@ function bindControls() {
   $("pauseBtn").addEventListener("click", togglePause);
   $("fsBtn").addEventListener("click", toggleFullscreen);
   $("refreshBtn").addEventListener("click", () => load({ first: true }));
-  $("settingsBtn").addEventListener("click", () => openSettings());
+  $("settingsBtn").addEventListener("click", () => openLocalSettings());
   document.querySelectorAll(".controls .seg button").forEach((b) =>
     b.addEventListener("click", () => setAudience(b.dataset.aud)));
   $("overrideSel").addEventListener("change", async (e) => {
@@ -415,15 +422,176 @@ function bindControls() {
   });
 }
 
-// Settings live in the Compass Toolkit menu. Chrome can raise it from here, but not in every window.
-async function openSettings() {
+// Raises the Compass Toolkit's own menu, for the Compass address and connection
+// tools, which live there rather than here. Chrome can open it from here, but not
+// in every window, so `button` (the one clicked) is told if it couldn't.
+async function openSettings(button) {
   try {
     await chrome.action.openPopup();
   } catch (e) {
-    const btn = $("settingsBtn");
-    btn.textContent = "Use the toolbar menu";
-    setTimeout(() => { btn.textContent = "Settings"; }, 4000);
+    if (!button) return;
+    const original = button.textContent;
+    button.textContent = "Use the toolbar menu";
+    setTimeout(() => { button.textContent = original; }, 4000);
   }
+}
+
+// ---------------------------------------------------------------- display settings
+
+// Everything about how the display looks and behaves day to day: which class,
+// how long each item stays up, and so on. The Compass address and connection
+// tools stay in the Compass Toolkit menu instead, since they're set up once
+// rather than adjusted from the room the display is actually in.
+function bindSettingsModal() {
+  $("openToolkitBtn").addEventListener("click", (e) => openSettings(e.currentTarget));
+  settingsModal.addEventListener("close", () => document.body.classList.remove("modal-open"));
+}
+
+function newsfeedSettingDef(key) {
+  return CompassToolkit.FEATURE_BY_KEY.newsfeedProjector.settings.find((s) => s.key === key);
+}
+
+// Every display setting sits in the one settings blob shared with the rest of the
+// toolkit, so saving one means reading, changing and writing back the whole thing.
+async function saveDisplaySetting(key, value) {
+  const all = await CompassToolkit.getSettings();
+  all.newsfeedProjector[key] = value;
+  await CompassToolkit.saveSettings(all);
+}
+
+function settingRowShell(def) {
+  const row = document.createElement("div");
+  row.className = "setting-row";
+  const text = document.createElement("div");
+  text.className = "setting-text";
+  const label = document.createElement("div");
+  label.className = "setting-label";
+  label.textContent = def.label;
+  text.append(label);
+  if (def.description) {
+    const desc = document.createElement("div");
+    desc.className = "setting-desc";
+    desc.textContent = def.description;
+    text.append(desc);
+  }
+  row.append(text);
+  return row;
+}
+
+function toggleRow(key) {
+  const def = newsfeedSettingDef(key);
+  const row = settingRowShell(def);
+  const wrap = document.createElement("label");
+  wrap.className = "switch setting-control";
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.checked = !!state.settings[key];
+  input.setAttribute("aria-label", def.label);
+  input.addEventListener("change", () => saveDisplaySetting(key, input.checked));
+  const slider = document.createElement("span");
+  slider.className = "slider";
+  wrap.append(input, slider);
+  row.append(wrap);
+  return row;
+}
+
+function selectRow(key) {
+  const def = newsfeedSettingDef(key);
+  const row = settingRowShell(def);
+  const select = document.createElement("select");
+  select.className = "setting-control";
+  select.setAttribute("aria-label", def.label);
+  def.options.forEach((o) => select.add(new Option(o.label, o.value)));
+  select.value = state.settings[key];
+  select.addEventListener("change", () => saveDisplaySetting(key, select.value));
+  row.append(select);
+  return row;
+}
+
+function numberRow(key) {
+  const def = newsfeedSettingDef(key);
+  const row = settingRowShell(def);
+  const input = document.createElement("input");
+  input.type = "number";
+  input.className = "setting-control";
+  input.min = def.min;
+  input.max = def.max;
+  input.value = state.settings[key];
+  input.setAttribute("aria-label", def.label);
+  input.addEventListener("change", () => {
+    // Blank or nonsense falls back to the default, and anything outside the range
+    // is pulled back into it, the same way the toolkit popup's own number fields do.
+    const typed = input.value.trim() === "" ? NaN : Number(input.value);
+    const value = Math.max(def.min, Math.min(def.max, isNaN(typed) ? def.default : typed));
+    input.value = value;
+    saveDisplaySetting(key, value);
+  });
+  row.append(input);
+  return row;
+}
+
+// The class year level isn't a fixed list of options like the others; it comes from
+// Compass itself, so it's built by hand rather than from the schema like the rest.
+function yearLevelRow() {
+  const row = settingRowShell({
+    label: "Class year level",
+    description:
+      "In the Students & parents and Students only views, only show news sent to this year level. Whole-school news is always shown."
+  });
+  const select = document.createElement("select");
+  select.className = "setting-control";
+  select.setAttribute("aria-label", "Class year level");
+  select.add(new Option("All year levels", "any"));
+  select.value = "any";
+  row.append(select);
+  // Only there once signed in; "All year levels" still works either way.
+  state.client.getYearLevels()
+    .then((levels) => {
+      levels.forEach((y) => select.add(new Option(y.name, String(y.id))));
+      select.value = String(state.settings.yearLevel);
+      if (select.value === "") select.value = "any";
+    })
+    .catch(() => {});
+  select.addEventListener("change", () => saveDisplaySetting("yearLevel", select.value));
+  return row;
+}
+
+function settingsGroup(title, rows) {
+  const group = document.createElement("div");
+  group.className = "settings-group";
+  const h = document.createElement("h3");
+  h.textContent = title;
+  group.append(h, ...rows);
+  return group;
+}
+
+function openLocalSettings() {
+  const body = $("settingsBody");
+  body.innerHTML = "";
+  body.append(
+    settingsGroup("What to show", [
+      selectRow("audience"),
+      yearLevelRow(),
+      toggleRow("includeUnknown"),
+      numberRow("maxItems"),
+      numberRow("maxAgeDays"),
+      toggleRow("priorityFirst")
+    ]),
+    settingsGroup("Display", [
+      numberRow("slideSeconds"),
+      numberRow("imageSeconds"),
+      selectRow("scrollSpeed"),
+      numberRow("refreshMinutes"),
+      toggleRow("hideAuthor"),
+      toggleRow("showClock")
+    ])
+  );
+  document.body.classList.add("modal-open");
+  settingsModal.showModal();
+  // Otherwise the browser focuses the first focusable element instead, which is the
+  // close button: pressing Space (also this display's own pause key) would then
+  // immediately close the dialog again, since a focused button activates on Space.
+  settingsModal.focus();
 }
 
 function showOff() {

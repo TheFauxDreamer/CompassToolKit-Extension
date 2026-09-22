@@ -443,6 +443,24 @@ presenter clicker) for previous and next, Space to pause, **F** for full screen,
 Students only. **This item is for** lets you re-label or hide a single item, and that is
 remembered on this computer.
 
+The toolkit menu only has the **Compass address**, the launch buttons above, and two
+diagnostic tools (below). Everything else about how the display looks and behaves day to
+day is in its own **Settings** button on the display itself, since that's more often
+changed from the room the display is actually in than from the toolkit menu:
+
+- **Default view**: what the display shows when it's opened without a view already
+  chosen, such as from a bookmark rather than the toolkit menu.
+- **Class year level**: in the Students & parents and Students only views, only show
+  news sent to this year level. Whole-school news is always shown.
+- **Show items whose audience couldn't be checked**, **Newest items to rotate
+  through**, **Skip items older than**, **Show priority items first**: which items
+  are shown. Zero days means no age limit.
+- **Seconds per item**, **Seconds per picture**, **Scrolling speed for long posts**:
+  how long each item stays up. Long posts scroll, and posts with several pictures
+  step through them.
+- **Check for new items every**, **Hide who posted each item**, **Show the time and
+  date**.
+
 Each item's audience is worked out in this order:
 
 1. The item's own audience targets from Compass.
@@ -452,25 +470,14 @@ Each item's audience is worked out in this order:
    parents unless you label it or turn on **Show items whose audience couldn't be
    checked**.
 
-**Check connection** in the panel shows which of these your account gets.
-
-- **Compass address**: your school's web address. The school's name on its own works
-  too. It starts as `https://tappingps-wa.compass.education`, so other schools need
-  to change it.
-- **Class year level**: in the Students & parents and Students only views, only show
-  news sent to this year level. Whole-school news is always shown.
-- **Default view**: what the display shows when it is opened without choosing. The
-  buttons above set this too.
-- **Newest items to rotate through**, **Skip items older than**, **Show priority
-  items first**: which items are shown. Zero days means no age limit.
-- **Seconds per item**, **Seconds per picture**, **Scrolling speed for long posts**:
-  how long each item stays up. Long posts scroll, and posts with several pictures
-  step through them.
-- **Check for new items every**, **Hide who posted each item**, **Show the time and
-  date**.
+**Check connection**, in the toolkit menu, shows which of these your account gets. The
+menu's **Compass address** is your school's web address; the school's name on its own
+works too, and it starts as `https://tappingps-wa.compass.education`, so other schools
+need to change it.
 
 While this feature is on, requests from the display and the menu to your school's
 Compass site have their Origin and Referer set to match that site, the way the Compass
 web page sends them, because some Compass endpoints are picky about where a request
-came from. Turn the feature off and that stops. The display's **Settings** button
-opens the toolkit menu.
+came from. Turn the feature off and that stops. The display's own **Settings** button
+also has a **Compass Toolkit menu** button, for the address and connection tools that
+live there instead.

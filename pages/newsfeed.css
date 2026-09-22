@@ -163,6 +163,81 @@ button:focus-visible, select:focus-visible { outline: 3px solid var(--tape); out
 .status button { background: var(--paper); color: var(--ink); border: 0; font-size: clamp(15px, 1.3vw, 26px); padding: .6em 1.2em; font-weight: 700; }
 .status button.secondary { background: rgba(255,255,255,.14); color: var(--paper); }
 
+/* ---------- Settings modal ---------- */
+/* The idle timer that hides .controls only watches .controls itself, so while
+   this dialog is open (a sibling element) that timer would otherwise still
+   strip body.show-controls and take the cursor with it. This class keeps the
+   cursor visible independently of that, for as long as the dialog is open. */
+body.modal-open { cursor: default; }
+
+dialog#settingsModal {
+  color: var(--ink);
+  background: var(--paper);
+  border: 0; border-radius: 10px; padding: 0;
+  width: min(640px, 92vw); max-height: 86vh;
+  box-shadow: 0 2vh 4vh rgba(0,0,0,.35);
+}
+/* Focused on open (see newsfeed.js) so Space doesn't land on the close button
+   instead, but the dialog is a container, not a control, so its own default
+   focus ring is just noise; the real controls inside keep theirs. */
+dialog#settingsModal:focus { outline: none; }
+dialog#settingsModal::backdrop { background: rgba(8,20,24,.6); }
+.settings-form { display: flex; flex-direction: column; max-height: 86vh; }
+.settings-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px 12px; border-bottom: 1px solid #e7e2d2;
+}
+.settings-head h2 { margin: 0; font-size: 20px; }
+.icon-close {
+  background: none; border: 0; color: var(--muted); font-size: 22px; line-height: 1;
+  padding: 4px 9px; border-radius: 6px;
+}
+.icon-close:hover { background: #f1ece0; color: var(--ink); }
+
+#settingsBody { overflow-y: auto; padding: 0 20px; }
+.settings-group { margin: 16px 0; }
+.settings-group h3 {
+  margin: 0 0 4px; font-size: 12.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .04em; color: var(--muted);
+}
+.setting-row {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 10px 0; border-top: 1px solid #f1ece0;
+}
+.settings-group h3 + .setting-row { border-top: 0; }
+.setting-text { min-width: 0; }
+.setting-label { font-size: 15px; font-weight: 600; }
+.setting-desc { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.setting-control { flex-shrink: 0; }
+select.setting-control, input.setting-control {
+  font: inherit; color: var(--ink); background: #fff;
+  border: 1px solid #d8d2c0; border-radius: 6px; padding: 6px 8px;
+}
+input.setting-control[type="number"] { width: 68px; text-align: right; }
+select.setting-control option { color: #000; }
+
+/* A simple accessible switch, for the toggles here (this page had none before). */
+.switch { position: relative; display: inline-block; width: 40px; height: 23px; flex-shrink: 0; }
+.switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.switch .slider {
+  position: absolute; inset: 0; background: #d8d2c0; border-radius: 23px;
+  transition: background .15s ease; pointer-events: none;
+}
+.switch .slider::before {
+  content: ""; position: absolute; width: 17px; height: 17px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,.3);
+  transition: transform .15s ease;
+}
+.switch input:checked + .slider { background: var(--board); }
+.switch input:checked + .slider::before { transform: translateX(17px); }
+.switch input:focus-visible + .slider { outline: 3px solid var(--tape); outline-offset: 2px; }
+
+.settings-note { margin: 8px 20px 0; font-size: 12px; color: var(--muted); }
+.settings-foot { display: flex; justify-content: space-between; gap: 10px; padding: 14px 20px 18px; }
+.settings-foot button { font-weight: 700; }
+#openToolkitBtn.secondary { background: #fff; color: var(--ink); border: 1px solid #d8d2c0; }
+.settings-foot button[type="submit"].primary { background: var(--board); color: #fff; border-color: var(--board); }
+
 @media (prefers-reduced-motion: reduce) {
   .sheet, .media img, .controls { transition: none; }
   .sheet { transform: none; }

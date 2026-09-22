@@ -68,6 +68,24 @@
     </article>
   </template>
 
+  <dialog id="settingsModal" aria-labelledby="settingsTitle" tabindex="-1">
+    <form method="dialog" class="settings-form">
+      <div class="settings-head">
+        <h2 id="settingsTitle">Display settings</h2>
+        <button type="submit" class="icon-close" aria-label="Close">&times;</button>
+      </div>
+      <div id="settingsBody"></div>
+      <p class="settings-note">
+        The Compass address and connection troubleshooting are in the Compass Toolkit
+        menu on the browser toolbar.
+      </p>
+      <div class="settings-foot">
+        <button type="button" id="openToolkitBtn" class="secondary">Compass Toolkit menu</button>
+        <button type="submit" class="primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+
   <script src="../src/shared/settings.js"></script>
   <script type="module" src="newsfeed.js"></script>
 </body>
